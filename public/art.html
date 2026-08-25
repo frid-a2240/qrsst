@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>ART - Libreta de Herramientas ISP</title>
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div id="successScreen" class="success-screen" style="display:none;">
+    <div class="success-icon">✓</div>
+    <h1>ART enviado</h1>
+    <p>Gracias por cuidarte y cuidar a los demás.</p>
+    <a class="btn-role primary" style="margin-top:20px; max-width:220px;" href="colaborador.html">Llenar otra libreta</a>
+  </div>
+
+  <div class="sheet-wrap" id="formScreen">
+    <div class="sheet-topbar">
+      <a class="back-link" href="colaborador.html">&larr; Volver</a>
+      <span class="step-pill" id="stepPill">Hoja 1 de 2</span>
+    </div>
+
+    <form id="artForm">
+      <!-- STEP 1 -->
+      <div id="step1">
+        <div class="sheet">
+          <img class="bg" src="img/hojas/art-1.jpg" alt="ART hoja 1">
+
+          <div class="f" style="left:30.86%; top:20.72%; width:35.28%; height:3.3%;">
+            <input type="text" spellcheck="false" name="sitio_trabajo" required>
+          </div>
+          <div class="f" style="left:76.2%; top:20.92%; width:18.44%; height:3.3%;">
+            <input type="date" name="fecha" required>
+          </div>
+          <div class="f" style="left:30.01%; top:25.61%; width:64.63%; height:3.3%;">
+            <input type="text" spellcheck="false" name="tarea" required>
+          </div>
+
+          <button type="button" class="chkbox teal" data-group="paso1_observo" data-value="si" style="left:71.68%; top:37.89%; width:5.74%; height:3.95%;">
+            <span class="mark"><svg viewBox="0 0 24 24" fill="none"><path d="M4 12l6 6L20 6" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          </button>
+          <button type="button" class="chkbox red" data-group="paso1_observo" data-value="no" style="left:79.5%; top:37.89%; width:5.74%; height:3.95%;">
+            <span class="mark"><svg viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="#fff" stroke-width="3.5" stroke-linecap="round"/></svg></span>
+          </button>
+
+          <button type="button" class="chkbox teal" data-group="paso2a_capacitado" data-value="si" style="left:71.68%; top:51.69%; width:5.74%; height:3.95%;">
+            <span class="mark"><svg viewBox="0 0 24 24" fill="none"><path d="M4 12l6 6L20 6" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          </button>
+          <button type="button" class="chkbox red" data-group="paso2a_capacitado" data-value="no" style="left:79.5%; top:51.69%; width:5.74%; height:3.95%;">
+            <span class="mark"><svg viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="#fff" stroke-width="3.5" stroke-linecap="round"/></svg></span>
+          </button>
+
+          <button type="button" class="chkbox teal" data-group="paso2b_autorizacion" data-value="si" style="left:71.68%; top:59.38%; width:5.74%; height:3.95%;">
+            <span class="mark"><svg viewBox="0 0 24 24" fill="none"><path d="M4 12l6 6L20 6" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          </button>
+          <button type="button" class="chkbox red" data-group="paso2b_autorizacion" data-value="no" style="left:79.5%; top:59.38%; width:5.74%; height:3.95%;">
+            <span class="mark"><svg viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="#fff" stroke-width="3.5" stroke-linecap="round"/></svg></span>
+          </button>
+
+          <button type="button" class="chkbox teal" data-group="paso2c_herramientas" data-value="si" style="left:71.68%; top:67.06%; width:5.74%; height:3.95%;">
+            <span class="mark"><svg viewBox="0 0 24 24" fill="none"><path d="M4 12l6 6L20 6" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          </button>
+          <button type="button" class="chkbox red" data-group="paso2c_herramientas" data-value="no" style="left:79.5%; top:67.06%; width:5.74%; height:3.95%;">
+            <span class="mark"><svg viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="#fff" stroke-width="3.5" stroke-linecap="round"/></svg></span>
+          </button>
+
+          <button type="button" class="chkbox teal" data-group="paso2d_epp" data-value="si" style="left:71.68%; top:74.74%; width:5.74%; height:3.95%;">
+            <span class="mark"><svg viewBox="0 0 24 24" fill="none"><path d="M4 12l6 6L20 6" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          </button>
+          <button type="button" class="chkbox red" data-group="paso2d_epp" data-value="no" style="left:79.5%; top:74.74%; width:5.74%; height:3.95%;">
+            <span class="mark"><svg viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="#fff" stroke-width="3.5" stroke-linecap="round"/></svg></span>
+          </button>
+
+          <button type="button" class="chkbox teal" data-group="paso2e_apto" data-value="si" style="left:71.68%; top:82.49%; width:5.74%; height:3.95%;">
+            <span class="mark"><svg viewBox="0 0 24 24" fill="none"><path d="M4 12l6 6L20 6" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          </button>
+          <button type="button" class="chkbox red" data-group="paso2e_apto" data-value="no" style="left:79.5%; top:82.49%; width:5.74%; height:3.95%;">
+            <span class="mark"><svg viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="#fff" stroke-width="3.5" stroke-linecap="round"/></svg></span>
+          </button>
+        </div>
+
+        <div class="sheet-actions">
+          <button type="button" class="btn-next" id="toStep2">Siguiente hoja &rarr;</button>
+        </div>
+      </div>
+
+      <!-- STEP 2 -->
+      <div id="step2" style="display:none;">
+        <div class="sheet">
+          <img class="bg" src="img/hojas/art-2.jpg" alt="ART hoja 2">
+
+          <div id="tableCells"></div>
+
+          <button type="button" class="chkbox teal" data-group="paso5_seguro" data-value="si" style="left:72.62%; top:67.19%; width:5.74%; height:3.95%;">
+            <span class="mark"><svg viewBox="0 0 24 24" fill="none"><path d="M4 12l6 6L20 6" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          </button>
+          <button type="button" class="chkbox red" data-group="paso5_seguro" data-value="no" style="left:80.53%; top:67.19%; width:5.64%; height:3.95%;">
+            <span class="mark"><svg viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="#fff" stroke-width="3.5" stroke-linecap="round"/></svg></span>
+          </button>
+        </div>
+
+        <div class="hint-box">Tip: puedes dejar renglones vacíos si no aplican, solo llena los que necesites.</div>
+
+        <div class="sheet-actions">
+          <label style="font-family:var(--font-head); font-weight:700; font-size:13px; color:var(--navy); display:block; margin-bottom:6px;">Tu nombre</label>
+          <input type="text" spellcheck="false" name="nombre_colaborador" required style="width:100%; padding:13px 14px; border-radius:12px; border:2px solid var(--border); font-family:var(--font-body); font-weight:600; font-size:15px;">
+          <button type="button" class="btn-prev" id="toStep1">&larr; Regresar</button>
+          <button type="submit" class="btn-submit" id="submitBtn">Enviar ART</button>
+        </div>
+        <div id="errorBox" class="error-box"></div>
+      </div>
+    </form>
+  </div>
+
+  <script src="js/art.js"></script>
+</body>
+</html>

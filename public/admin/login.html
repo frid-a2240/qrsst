@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Libreta de Herramientas - ISP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"></script>
+    <script>
+        tailwind.config = { theme: { extend: { colors: { brand: {
+            50:'#eff6ff',100:'#dbeafe',500:'#00b4a8',600:'#00a8a0',
+            700:'#00857f',800:'#1e40af',900:'#1e3a8a'
+        }}, fontFamily: { sans: ['Montserrat','system-ui','sans-serif'] } } } }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body class="font-sans antialiased bg-slate-100 h-screen overflow-hidden">
+    <div class="h-full flex">
+        
+        <div class="hidden lg:flex lg:w-1/2 items-center justify-center bg-[#1E2D44] overflow-hidden">
+            <img src="../img/portada.jpg" alt="" class="w-full h-full object-contain">
+        </div>
+
+        <div class="flex-1 flex items-center justify-center p-8 lg:p-24 bg-white overflow-y-auto">
+            <div class="w-full max-w-md">
+
+                <div class="mb-10 border-b pb-6 text-center">
+                    <img src="../img/logo-mark.png" class="w-14 h-14 object-contain mb-3 mx-auto" alt="ISP">
+                    <div class="text-sm font-bold text-[#1E2D44]">Infraestructura y Servicios Portuarios</div>
+                    <div class="text-3xl font-extrabold text-[#00857f]">Panel de Libretas</div>
+                </div>
+
+                <div class="mb-8">
+                    <h2 class="text-2xl font-bold text-[#1E2D44] mb-2">Iniciar sesión</h2>
+                    <p class="text-sm text-gray-500">Ingresa tus credenciales para ver las libretas registradas</p>
+                </div>
+
+                <form id="loginForm" class="space-y-5">
+                    <div>
+                        <label class="text-sm font-semibold text-gray-700">Correo</label>
+                        <input id="inp-email" name="email" type="email" placeholder="tu@correo.com" autocomplete="username" required
+                            oninput="clearMsgs()"
+                            class="w-full mt-2 px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#00b4a8]/25 focus:border-[#00b4a8]">
+                    </div>
+                    <div>
+                        <label class="text-sm font-semibold text-gray-700">Contraseña</label>
+                        <div class="relative mt-2">
+                            <input id="inp-pass" name="password" type="password" placeholder="Tu contraseña" autocomplete="current-password" required
+                                oninput="clearMsgs()"
+                                class="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#00b4a8]/25 focus:border-[#00b4a8]">
+                            <button type="button" onclick="togglePw()"
+                                class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
+                                <iconify-icon id="ojo" icon="mdi:eye-outline"></iconify-icon>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="login-err" class="hidden text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg p-3 flex items-center gap-2">
+                        <iconify-icon icon="mdi:alert-circle-outline"></iconify-icon>
+                        <span id="login-err-text"></span>
+                    </div>
+
+                    <button id="btn-login" type="submit"
+                        class="w-full py-3 bg-[#1E2D44] hover:bg-[#253649] disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-xl font-semibold transition flex items-center justify-center gap-2">
+                        <span id="btn-label">Ingresar</span>
+                        <iconify-icon id="btn-loader" icon="mdi:loading" class="hidden animate-spin"></iconify-icon>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/admin-login.js"></script>
+</body>
+</html>
