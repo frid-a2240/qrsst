@@ -27,9 +27,15 @@
           <div class="text-[11px] text-white/60 leading-tight">ISP · Infraestructura y Servicios Portuarios</div>
         </div>
       </div>
-      <button id="logoutBtn" class="flex items-center gap-2 text-xs font-semibold bg-white/10 hover:bg-white/20 border border-white/25 rounded-full px-4 py-2 transition">
-        Cerrar sesión
-      </button>
+      <div class="flex items-center gap-2">
+        <button id="llenarLibretaBtn" class="flex items-center gap-2 text-xs font-bold bg-[#00b4a8] hover:bg-[#00a8a0] rounded-full px-4 py-2 transition">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/></svg>
+          Llenar libreta
+        </button>
+        <button id="logoutBtn" class="flex items-center gap-2 text-xs font-semibold bg-white/10 hover:bg-white/20 border border-white/25 rounded-full px-4 py-2 transition">
+          Cerrar sesión
+        </button>
+      </div>
     </div>
   </header>
 
@@ -46,10 +52,14 @@
       <label class="text-xs font-semibold text-gray-500 pl-1">Hasta</label>
       <input type="date" id="filtroHasta" class="px-3 py-2 rounded-lg border border-gray-200 text-sm font-medium">
       <button id="filtrarBtn" class="px-4 py-2 rounded-lg bg-[#1E2D44] text-white text-xs font-bold hover:bg-[#253649] transition">Filtrar</button>
+      <button id="exportBtn" class="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#00857f] text-white text-xs font-bold hover:bg-[#00716c] transition">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Descargar Excel (ART + Stop Work + NMHA)
+      </button>
       <span id="resultCount" class="ml-auto text-xs font-semibold text-gray-400"></span>
     </div>
 
-    <div id="listContainer" class="grid gap-3 sm:grid-cols-2"></div>
+    <div id="listContainer" class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3"></div>
   </main>
 
   <div class="detail-overlay" id="detailOverlay">
@@ -62,6 +72,7 @@
   </style>
 
   <script src="../js/viewer.js"></script>
+  <script src="../js/acciones-historial.js"></script>
   <script src="../js/admin-dashboard.js"></script>
 </body>
 </html>

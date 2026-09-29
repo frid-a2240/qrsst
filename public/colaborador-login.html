@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Colaborador - Libreta de Herramientas ISP</title>
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="page">
+    <a class="back-link" href="index.html">&larr; Volver</a>
+    <h1>Acceso de colaborador</h1>
+
+    <!-- PASO A: número de control -->
+    <div id="stepA">
+      <label class="login-label">Número de control</label>
+      <input type="text" inputmode="numeric" id="inpNumeroControl" class="login-input" placeholder="Ej. 12345" autocomplete="username">
+      <button type="button" class="btn-role primary" id="btnContinuar" style="margin-top:14px;">Continuar</button>
+      <div id="errBoxA" class="error-box"></div>
+    </div>
+
+    <!-- PASO B: contraseña (existente o nueva) -->
+    <div id="stepB" style="display:none;">
+      <p id="stepBTexto" style="font-family:var(--font-body); font-weight:600; color:var(--navy); margin-bottom:14px;"></p>
+
+      <div id="passwordExistente">
+        <label class="login-label">Contraseña</label>
+        <div class="pw-wrap">
+          <input type="password" id="inpPassword" class="login-input" autocomplete="current-password">
+          <button type="button" class="pw-toggle" data-target="inpPassword" aria-label="Mostrar contraseña"></button>
+        </div>
+      </div>
+
+      <div id="passwordNueva" style="display:none;">
+        <label class="login-label">Crea tu contraseña</label>
+        <div class="pw-wrap">
+          <input type="password" id="inpPasswordNueva" class="login-input" autocomplete="new-password">
+          <button type="button" class="pw-toggle" data-target="inpPasswordNueva" aria-label="Mostrar contraseña"></button>
+        </div>
+        <label class="login-label" style="margin-top:10px;">Confirma tu contraseña</label>
+        <div class="pw-wrap">
+          <input type="password" id="inpPasswordConfirma" class="login-input" autocomplete="new-password">
+          <button type="button" class="pw-toggle" data-target="inpPasswordConfirma" aria-label="Mostrar contraseña"></button>
+        </div>
+      </div>
+
+      <button type="button" class="btn-role primary" id="btnEntrar" style="margin-top:14px;">Ingresar</button>
+      <a href="#" id="btnCambiarNumero" style="display:block; text-align:center; margin-top:14px; color:var(--text-muted); font-size:13px; font-weight:700;">&lsaquo; Usar otro número de control</a>
+      <div id="errBoxB" class="error-box"></div>
+    </div>
+  </div>
+
+  <style>
+    .login-label { display:block; font-family:var(--font-head); font-weight:700; font-size:13px; color:var(--navy); margin-bottom:6px; }
+    .login-input {
+      width:100%; padding:13px 44px 13px 14px; border-radius:12px; border:2px solid var(--border);
+      font-family:var(--font-body); font-weight:600; font-size:15px; margin-bottom:4px;
+    }
+    .pw-wrap { position:relative; }
+    .pw-toggle {
+      position:absolute; right:2px; top:50%; transform:translateY(-50%);
+      width:44px; height:44px; border:none; background:transparent; cursor:pointer;
+      display:flex; align-items:center; justify-content:center; color:var(--text-muted);
+      -webkit-tap-highlight-color: transparent;
+    }
+  </style>
+
+  <script src="js/colaborador-login.js"></script>
+</body>
+</html>

@@ -4,11 +4,16 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "create-admin": "node --env-file=.env scripts/create-admin.js"
+    "dev": "node --env-file=.env scripts/dev-server.js",
+    "create-admin": "node --env-file=.env scripts/create-admin.js",
+    "seed-colaboradores": "node --env-file=.env scripts/seed-colaboradores.js",
+    "seed-responsables": "node --env-file=.env scripts/seed-responsables.js"
   },
   "dependencies": {
-    "pg": "^8.11.5",
     "bcryptjs": "^2.4.3",
-    "jsonwebtoken": "^9.0.2"
+    "exceljs": "^4.4.0",
+    "jsonwebtoken": "^9.0.2",
+    "nodemailer": "^10.0.12",
+    "pg": "^8.11.5"
   }
 }

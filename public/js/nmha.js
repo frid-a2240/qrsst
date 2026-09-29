@@ -6,7 +6,23 @@ const errorBox = document.getElementById('errorBox');
 const submitBtn = document.getElementById('submitBtn');
 const esencialesContainer = document.getElementById('esencialesContainer');
 
-const ESENCIALES_LEFTS = [13.36, 25.96, 38.38, 50.80, 63.41, 75.82];
+window.colaboradorListo.then((colaborador) => {
+  if (!colaborador) return;
+  const display = document.getElementById('reportadoPorDisplay');
+  const hidden = form.querySelector('input[name="reportado_por"]');
+  if (colaborador.modo_admin) {
+    window.hacerNombreEditable(display, hidden, colaborador.nombre, 'nombre-editable');
+    return;
+  }
+  display.textContent = colaborador.nombre;
+  hidden.value = colaborador.nombre;
+});
+
+document.getElementById('openRefGuideBtn').addEventListener('click', () => {
+  openReferenceGuide(['img/referencia/stop-work-ref-1.jpg'], '12 Esenciales de seguridad');
+});
+
+const ESENCIALES_LEFTS =[13.36, 25.96, 38.38, 50.80, 63.41, 75.82];
 const ICON_W = 10.8, ICON_H = 7.42;
 const selectedEsenciales = new Set();
 
@@ -42,7 +58,7 @@ document.querySelectorAll('.chkbox[data-group]').forEach((btn) => {
 
 document.getElementById('toStep2').addEventListener('click', () => {
   const fd = new FormData(form);
-  if (!fd.get('fecha') || !fd.get('reportado_por') || !fd.get('centro_trabajo') || !fd.get('area_especifica') || !fd.get('descripcion')) {
+  if (!fd.get('fecha') || !String(fd.get('reportado_por') || '').trim() || !fd.get('centro_trabajo') || !fd.get('area_especifica') || !fd.get('descripcion')) {
     alert('Completa fecha, reportado por, centro de trabajo, área específica y la descripción antes de continuar.');
     return;
   }
@@ -76,6 +92,7 @@ form.addEventListener('submit', async (e) => {
     tipo: tipos,
     fecha: fd.get('fecha'),
     reportado_por: fd.get('reportado_por'),
+    como_admin: Boolean(window.modoAdmin),
     centro_trabajo: fd.get('centro_trabajo'),
     area_especifica: fd.get('area_especifica'),
     descripcion: fd.get('descripcion'),

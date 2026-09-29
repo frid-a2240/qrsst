@@ -41,8 +41,13 @@ export default async function handler(req, res) {
   const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
 
   try {
+    const extra = tipo === 'nmha'
+      ? `, (SELECT count(*) FROM nmha_acciones a WHERE a.nmha_id = t.id)::int AS acciones_asignadas
+         , (SELECT count(*) FROM nmha_acciones a WHERE a.nmha_id = t.id AND a.estado = 'cerrada')::int AS acciones_cerradas
+         , (SELECT count(*) FROM nmha_acciones a WHERE a.nmha_id = t.id AND a.estado = 'en_revision')::int AS acciones_en_revision`
+      : '';
     const result = await query(
-      `SELECT * FROM ${table} ${where} ORDER BY created_at DESC LIMIT 500`,
+      `SELECT t.*${extra} FROM ${table} t ${where} ORDER BY created_at DESC LIMIT 500`,
       params
     );
     res.status(200).json({ rows: result.rows });

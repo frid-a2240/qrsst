@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Mis acciones - Libreta de Herramientas ISP</title>
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="page">
+    <a class="back-link" href="colaborador.html">&larr; Volver</a>
+    <h1>Mis acciones</h1>
+
+    <div class="ma-tabs" role="tablist">
+      <button type="button" class="ma-tab active" data-grupo="pendientes">Por realizar <span id="cntPendientes"></span></button>
+      <button type="button" class="ma-tab" data-grupo="revision">En revisión <span id="cntRevision"></span></button>
+      <button type="button" class="ma-tab" data-grupo="cerradas">Cerradas <span id="cntCerradas"></span></button>
+    </div>
+
+    <div id="lista"><div class="loading">Cargando...</div></div>
+  </div>
+
+  <script src="js/require-colaborador.js"></script>
+  <script src="js/acciones-historial.js"></script>
+  <script src="js/mis-acciones.js"></script>
+</body>
+</html>

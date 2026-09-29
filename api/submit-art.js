@@ -1,4 +1,5 @@
 import { query } from '../lib/db.js';
+import { autorDelEnvio } from '../lib/autor.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -7,6 +8,12 @@ export default async function handler(req, res) {
   }
 
   const b = req.body || {};
+  const { autor: colaborador, status, error } = autorDelEnvio(req, b.nombre_colaborador);
+  if (!colaborador) {
+    res.status(status).json({ error });
+    return;
+  }
+  b.nombre_colaborador = colaborador.nombre;
   const required = ['nombre_colaborador', 'sitio_trabajo', 'fecha', 'tarea'];
   for (const field of required) {
     if (!b[field] || typeof b[field] !== 'string') {
@@ -35,18 +42,24 @@ export default async function handler(req, res) {
         .filter((row) => row.peligro || row.control)
     : [];
 
+  if (tabla.length === 0) {
+    res.status(400).json({ error: 'Completa el campo: identifica al menos un peligro o un control antes de enviar.' });
+    return;
+  }
+
   try {
     await query(
       `INSERT INTO art_submissions
         (nombre_colaborador, sitio_trabajo, fecha, tarea,
          paso1_observo, paso2a_capacitado, paso2b_autorizacion, paso2c_herramientas, paso2d_epp, paso2e_apto,
-         tabla, paso5_seguro)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)`,
+         tabla, paso5_seguro, numero_control, puesto)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)`,
       [
         b.nombre_colaborador, b.sitio_trabajo, b.fecha, b.tarea,
         b.paso1_observo, b.paso2a_capacitado, b.paso2b_autorizacion, b.paso2c_herramientas, b.paso2d_epp, b.paso2e_apto,
         JSON.stringify(tabla),
-        b.paso5_seguro
+        b.paso5_seguro,
+        colaborador.numero_control, colaborador.puesto
       ]
     );
     res.status(201).json({ ok: true });

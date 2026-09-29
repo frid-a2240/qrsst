@@ -30,12 +30,21 @@ function fmtFechaCorta(f) {
   return `${d}/${m}/${y}`;
 }
 
+function metaConPuesto(nombre, row) {
+  const puesto = row.puesto ? ` <span style="font-weight:600; color:var(--text-muted);">(${escapeHtmlV(row.puesto)})</span>` : '';
+  return `<b>${escapeHtmlV(nombre)}</b>${puesto}`;
+}
+
 const ART_ROW_LINES = [14.39, 19.40, 24.35, 29.30, 34.24, 39.19, 44.14, 49.09, 54.04, 58.98, 63.93];
 const ART_COL1 = { left: 5.7, width: 33.6 };
 const ART_COL2 = { left: 40.4, width: 54.1 };
 const NMHA_ESENCIALES_LEFTS = [13.36, 25.96, 38.38, 50.80, 63.41, 75.82];
 
 function renderArtViewer(row) {
+  let page0 = `<div class="sheet"><img class="bg" src="../img/hojas/art-0.jpg" alt="ART portada">`;
+  page0 += vText(17.9, 19.6, 76.5, 3.3, row.nombre_colaborador);
+  page0 += `</div>`;
+
   const q = [
     ['paso1_observo', 37.89],
     ['paso2a_capacitado', 51.69],
@@ -46,7 +55,7 @@ function renderArtViewer(row) {
   ];
   let page1 = `<div class="sheet"><img class="bg" src="../img/hojas/art-1.jpg" alt="ART hoja 1">`;
   page1 += vText(30.86, 20.72, 35.28, 3.3, row.sitio_trabajo);
-  page1 += vText(76.2, 20.92, 18.44, 3.3, fmtFechaCorta(row.fecha));
+  page1 += vText(76.2, 20.92, 22.5, 3.3, fmtFechaCorta(row.fecha));
   page1 += vText(30.01, 25.61, 64.63, 3.3, row.tarea);
   q.forEach(([key, top]) => {
     const val = row[key];
@@ -68,7 +77,7 @@ function renderArtViewer(row) {
   page2 += vCheck(80.53, 67.19, 5.64, 3.95, 'red', row.paso5_seguro === false);
   page2 += `</div>`;
 
-  return `<div class="viewer-meta">Colaborador: <b>${escapeHtmlV(row.nombre_colaborador)}</b></div>` + page1 + page2;
+  return `<div class="viewer-meta">Colaborador: ${metaConPuesto(row.nombre_colaborador, row)}</div>` + page0 + page1 + page2;
 }
 
 function renderStopWorkViewer(row) {
@@ -81,7 +90,7 @@ function renderStopWorkViewer(row) {
   html += vCheck(16.56, 56.36, 4.52, 6.23, 'teal', row.quien_empezo === 'companero');
   html += vText(6.99, 70.42, 85.09, 25.99, row.descripcion, { multiline: true });
   html += `</div>`;
-  return `<div class="viewer-meta">Colaborador: <b>${escapeHtmlV(row.nombre_colaborador)}</b></div>` + html;
+  return `<div class="viewer-meta">Colaborador: ${metaConPuesto(row.nombre_colaborador, row)}</div>` + html;
 }
 
 function renderNmhaViewer(row) {
@@ -115,5 +124,5 @@ function renderNmhaViewer(row) {
   page2 += vText(7.55, 57.06, 85.09, 22.15, row.acciones_sugeridas, { multiline: true });
   page2 += `</div>`;
 
-  return `<div class="viewer-meta">Reportó: <b>${escapeHtmlV(row.reportado_por)}</b></div>` + page1 + page2;
+  return `<div class="viewer-meta">Reportó: ${metaConPuesto(row.reportado_por, row)}</div>` + page1 + page2;
 }

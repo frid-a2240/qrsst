@@ -2,6 +2,25 @@ const form = document.getElementById('stopForm');
 const errorBox = document.getElementById('errorBox');
 const submitBtn = document.getElementById('submitBtn');
 
+window.colaboradorListo.then((colaborador) => {
+  if (!colaborador) return;
+  const display = document.getElementById('nombreDisplay');
+  const hidden = form.querySelector('input[name="nombre_colaborador"]');
+  if (colaborador.modo_admin) {
+    window.hacerNombreEditable(display, hidden, colaborador.nombre, 'readonly-field editable-field');
+    return;
+  }
+  display.textContent = colaborador.nombre;
+  hidden.value = colaborador.nombre;
+});
+
+document.getElementById('openRefGuideBtn').addEventListener('click', () => {
+  openReferenceGuide(
+    ['img/referencia/stop-work-ref-1.jpg', 'img/referencia/stop-work-ref-2.jpg'],
+    'Guía de referencia'
+  );
+});
+
 document.querySelectorAll('.chkbox[data-group]').forEach((btn) => {
   btn.addEventListener('click', () => {
     const group = btn.dataset.group;
@@ -27,8 +46,14 @@ form.addEventListener('submit', async (e) => {
   }
 
   const fd = new FormData(form);
+  if (!String(fd.get('nombre_colaborador') || '').trim()) {
+    errorBox.textContent = 'Escribe el nombre de quien llena la libreta.';
+    errorBox.style.display = 'block';
+    return;
+  }
   const payload = {
     nombre_colaborador: fd.get('nombre_colaborador'),
+    como_admin: Boolean(window.modoAdmin),
     fecha: fd.get('fecha'),
     tipo_persona: form.dataset.tipo_persona,
     nombre_companero: fd.get('nombre_companero') || null,

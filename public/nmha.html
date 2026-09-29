@@ -17,7 +17,10 @@
   <div class="sheet-wrap" id="formScreen">
     <div class="sheet-topbar">
       <a class="back-link" href="colaborador.html">&larr; Volver</a>
-      <span class="step-pill" id="stepPill">Hoja 1 de 2</span>
+      <div style="display:flex; align-items:center; gap:8px;">
+        <button type="button" id="openRefGuideBtn" style="padding:6px 12px; border-radius:999px; border:2px solid var(--border); background:#fff; font-family:var(--font-head); font-weight:700; font-size:12.5px; color:var(--navy); cursor:pointer;">📖 Ver guía</button>
+        <span class="step-pill" id="stepPill">Hoja 1 de 2</span>
+      </div>
     </div>
 
     <form id="nmhaForm">
@@ -43,7 +46,8 @@
             <input type="date" name="fecha" required>
           </div>
           <div class="f" style="left:28.22%; top:31.6%; width:66.32%; height:3.3%;">
-            <input type="text" spellcheck="false" name="reportado_por" required>
+            <div class="viewer-text" id="reportadoPorDisplay"></div>
+            <input type="hidden" name="reportado_por">
           </div>
           <div class="f" style="left:33.58%; top:37.13%; width:60.87%; height:3.3%;">
             <input type="text" spellcheck="false" name="centro_trabajo" required>
@@ -93,6 +97,8 @@
     </form>
   </div>
 
+  <script src="js/reference-viewer.js"></script>
+  <script src="js/require-colaborador.js"></script>
   <script src="js/nmha.js"></script>
 </body>
 </html>

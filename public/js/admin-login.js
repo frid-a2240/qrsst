@@ -26,10 +26,10 @@ form.addEventListener('submit', async (e) => {
   e.preventDefault();
   clearMsgs();
 
-  const email = document.getElementById('inp-email').value.trim();
+  const numero_control = document.getElementById('inp-numero-control').value.trim();
   const password = document.getElementById('inp-pass').value;
-  if (!email || !password) {
-    mostrarErr('Ingresa tu correo y contraseña');
+  if (!numero_control || !password) {
+    mostrarErr('Ingresa tu número de control y contraseña');
     return;
   }
 
@@ -41,9 +41,10 @@ form.addEventListener('submit', async (e) => {
     const res = await fetch('/api/admin-login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password })
+      body: JSON.stringify({ numero_control, password })
     });
     if (!res.ok) throw new Error((await res.json()).error || 'No se pudo iniciar sesión');
+    try { sessionStorage.removeItem('isp_modo_admin'); } catch {}
     window.location.href = 'dashboard.html';
   } catch (err) {
     btn.disabled = false;

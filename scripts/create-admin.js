@@ -1,28 +1,35 @@
-// Crea o actualiza una cuenta de administrador.
-// Uso: node scripts/create-admin.js correo@ejemplo.com "MiContraseña123" "Nombre visible"
+// Marca a un colaborador ya existente en el roster como administrador.
+// Uso: node scripts/create-admin.js 204877 [contraseña]
+// El número de control debe existir ya en la tabla colaboradores (cargado vía
+// npm run seed-colaboradores). Si no se da contraseña, la persona la crea ella
+// misma la primera vez que entra al panel admin (igual que el login de colaborador).
 // Requiere que DATABASE_URL esté definida (usa un archivo .env local con `node --env-file=.env`,
 // o exporta la variable en tu terminal antes de ejecutar el script).
 
 import bcrypt from 'bcryptjs';
 import { getPool } from '../lib/db.js';
 
-const [, , email, password, nombre] = process.argv;
+const [, , numeroControl, password] = process.argv;
 
-if (!email || !password || !nombre) {
-  console.error('Uso: node scripts/create-admin.js correo@ejemplo.com contraseña "Nombre visible"');
+if (!numeroControl) {
+  console.error('Uso: node scripts/create-admin.js numero_control [contraseña]');
   process.exit(1);
 }
 
-const hash = await bcrypt.hash(password, 10);
 const pool = getPool();
 
-await pool.query(
-  `INSERT INTO admins (email, password_hash, nombre)
-   VALUES ($1, $2, $3)
-   ON CONFLICT (email) DO UPDATE SET password_hash = EXCLUDED.password_hash, nombre = EXCLUDED.nombre`,
-  [email.toLowerCase().trim(), hash, nombre]
-);
+const existing = await pool.query('SELECT id, nombre FROM colaboradores WHERE numero_control = $1', [numeroControl.trim()]);
+if (!existing.rows[0]) {
+  console.error(`No existe ningún colaborador con número de control ${numeroControl}. Carga el roster primero (npm run seed-colaboradores).`);
+  process.exit(1);
+}
 
-console.log(`Cuenta lista: ${email}`);
+if (password) {
+  const hash = await bcrypt.hash(password, 10);
+  await pool.query('UPDATE colaboradores SET es_admin = true, password_hash = $1 WHERE numero_control = $2', [hash, numeroControl.trim()]);
+} else {
+  await pool.query('UPDATE colaboradores SET es_admin = true WHERE numero_control = $1', [numeroControl.trim()]);
+}
+
+console.log(`${existing.rows[0].nombre} (${numeroControl}) ahora es administrador.`);
 await pool.end();
-

@@ -6,5 +6,5 @@ export default async function handler(req, res) {
     res.status(401).json({ error: 'No autenticado' });
     return;
   }
-  res.status(200).json({ email: admin.email, nombre: admin.nombre });
+  res.status(200).json({ numero_control: admin.numero_control, nombre: admin.nombre, puesto: admin.puesto });
 }
