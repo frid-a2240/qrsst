@@ -89,11 +89,13 @@
           })
         });
         const data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'No se pudo continuar');
+        if (!res.ok) throw Object.assign(new Error(data.error || 'No se pudo continuar'), { servidor: true });
         try { sessionStorage.removeItem('isp_modo_admin'); } catch {}
         window.location.href = 'colaborador.html';
       } catch (err) {
-        errBox.textContent = err.message;
+        errBox.textContent = err.servidor
+          ? err.message
+          : 'No hay conexión con el servidor. Conéctate al wifi de la empresa e inténtalo de nuevo.';
         errBox.style.display = 'block';
         btn.disabled = false;
         btn.textContent = 'Continuar';

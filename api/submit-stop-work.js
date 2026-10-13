@@ -1,6 +1,6 @@
 import { query } from '../lib/db.js';
 import { autorDelEnvio } from '../lib/autor.js';
-import { esFecha, texto } from '../lib/validar.js';
+import { esFecha, texto, envioId, llenadoEn } from '../lib/validar.js';
 
 const TIPOS_PERSONA = ['empleado', 'contratista'];
 const QUIEN_EMPEZO = ['yo', 'companero'];
@@ -40,11 +40,14 @@ export default async function handler(req, res) {
   try {
     await query(
       `INSERT INTO stop_work_submissions
-        (nombre_colaborador, fecha, tipo_persona, nombre_companero, quien_empezo, descripcion, numero_control, puesto)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
+        (nombre_colaborador, fecha, tipo_persona, nombre_companero, quien_empezo, descripcion, numero_control, puesto,
+         envio_id, created_at)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,COALESCE($10::timestamptz, now()))
+       ON CONFLICT (envio_id) DO NOTHING`,
       [
         colaborador.nombre, b.fecha, b.tipo_persona, nombreCompanero, b.quien_empezo, descripcion,
-        colaborador.numero_control, colaborador.puesto
+        colaborador.numero_control, colaborador.puesto,
+        envioId(b.envio_id), llenadoEn(b.llenado_en)
       ]
     );
     res.status(201).json({ ok: true });

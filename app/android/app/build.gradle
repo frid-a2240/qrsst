@@ -1,0 +1,76 @@
+apply plugin: 'com.android.application'
+
+// La versión sale de app/package.json (1.2.3 -> versionCode 10203) para que cada
+// APK nueva se instale encima de la anterior.
+def versionApp = new groovy.json.JsonSlurper().parse(file('../../package.json')).version
+def partesVersion = versionApp.tokenize('.').collect { it as int }
+def codigoVersion = partesVersion[0] * 10000 + partesVersion[1] * 100 + partesVersion[2]
+
+// Firma: app/firma/firma.properties (no va a git). La genera scripts/construir-apk.mjs.
+def firmaProps = new Properties()
+def firmaArchivo = file('../../firma/firma.properties')
+if (firmaArchivo.exists()) firmaArchivo.withInputStream { firmaProps.load(it) }
+
+android {
+    namespace = "com.isp.libretaherramientas"
+    compileSdk = rootProject.ext.compileSdkVersion
+    defaultConfig {
+        applicationId "com.isp.libretaherramientas"
+        minSdkVersion rootProject.ext.minSdkVersion
+        targetSdkVersion rootProject.ext.targetSdkVersion
+        versionCode codigoVersion
+        versionName versionApp
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        aaptOptions {
+             // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
+             // Default: https://android.googlesource.com/platform/frameworks/base/+/282e181b58cf72b6ca770dc7ca5f91f135444502/tools/aapt/AaptAssets.cpp#61
+            ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
+        }
+    }
+    signingConfigs {
+        release {
+            if (firmaArchivo.exists()) {
+                storeFile file("../../firma/${firmaProps['archivo']}")
+                storePassword firmaProps['clave']
+                keyAlias firmaProps['alias']
+                keyPassword firmaProps['clave']
+            }
+        }
+    }
+    buildTypes {
+        release {
+            if (firmaArchivo.exists()) signingConfig signingConfigs.release
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+repositories {
+    flatDir{
+        dirs '../capacitor-cordova-android-plugins/src/main/libs', 'libs'
+    }
+}
+
+dependencies {
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation "androidx.appcompat:appcompat:$androidxAppCompatVersion"
+    implementation "androidx.coordinatorlayout:coordinatorlayout:$androidxCoordinatorLayoutVersion"
+    implementation "androidx.core:core-splashscreen:$coreSplashScreenVersion"
+    implementation project(':capacitor-android')
+    testImplementation "junit:junit:$junitVersion"
+    androidTestImplementation "androidx.test.ext:junit:$androidxJunitVersion"
+    androidTestImplementation "androidx.test.espresso:espresso-core:$androidxEspressoCoreVersion"
+    implementation project(':capacitor-cordova-android-plugins')
+}
+
+apply from: 'capacitor.build.gradle'
+
+try {
+    def servicesJSON = file('google-services.json')
+    if (servicesJSON.text) {
+        apply plugin: 'com.google.gms.google-services'
+    }
+} catch(Exception e) {
+    logger.info("google-services.json not found, google-services plugin not applied. Push Notifications won't work")
+}

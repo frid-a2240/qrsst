@@ -1,6 +1,6 @@
 import bcrypt from 'bcryptjs';
 import { query } from '../lib/db.js';
-import { signSession, setSessionCookie, COLAB_COOKIE_NAME } from '../lib/auth.js';
+import { signSession, setSessionCookie, horasSesion, COLAB_COOKIE_NAME } from '../lib/auth.js';
 import { bloqueado, registrarFallo, limpiarFallos } from '../lib/rate-limit.js';
 
 export default async function handler(req, res) {
@@ -61,14 +61,15 @@ export default async function handler(req, res) {
     }
 
     limpiarFallos(req, numeroControl);
+    const horas = horasSesion(req);
     const token = signSession({
       rol: 'colaborador',
       id: colaborador.id,
       numero_control: colaborador.numero_control,
       nombre: colaborador.nombre,
       puesto: colaborador.puesto
-    });
-    setSessionCookie(res, token, { name: COLAB_COOKIE_NAME });
+    }, horas);
+    setSessionCookie(res, token, { name: COLAB_COOKIE_NAME, hours: horas });
     res.status(200).json({ ok: true, nombre: colaborador.nombre });
   } catch (err) {
     console.error(err);

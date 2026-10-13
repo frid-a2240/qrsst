@@ -152,3 +152,14 @@ CREATE INDEX IF NOT EXISTS idx_art_created ON art_submissions (created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_stop_work_created ON stop_work_submissions (created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_nmha_created ON nmha_submissions (created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_nmha_acciones_responsable ON nmha_acciones (responsable_id, estado);
+
+-- Envíos desde la app de Android: cada uno trae un id único (envio_id) para que un reintento
+-- después de estar sin conexión no se guarde dos veces.
+ALTER TABLE art_submissions ADD COLUMN IF NOT EXISTS envio_id TEXT;
+ALTER TABLE stop_work_submissions ADD COLUMN IF NOT EXISTS envio_id TEXT;
+ALTER TABLE nmha_submissions ADD COLUMN IF NOT EXISTS envio_id TEXT;
+ALTER TABLE nmha_accion_eventos ADD COLUMN IF NOT EXISTS envio_id TEXT;
+CREATE UNIQUE INDEX IF NOT EXISTS uq_art_envio ON art_submissions (envio_id);
+CREATE UNIQUE INDEX IF NOT EXISTS uq_stop_work_envio ON stop_work_submissions (envio_id);
+CREATE UNIQUE INDEX IF NOT EXISTS uq_nmha_envio ON nmha_submissions (envio_id);
+CREATE UNIQUE INDEX IF NOT EXISTS uq_accion_eventos_envio ON nmha_accion_eventos (envio_id);

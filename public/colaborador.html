@@ -85,7 +85,7 @@
         window.location.href = 'admin/dashboard.html';
         return;
       }
-      await fetch('api/colaborador-logout', { method: 'POST' });
+      try { await fetch('api/colaborador-logout', { method: 'POST' }); } catch {}
       window.location.href = 'index.html';
     });
   </script>

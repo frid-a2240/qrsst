@@ -1,0 +1,5 @@
+node_modules/
+www/
+dist/
+# Firma de la APK: NO se sube. Respáldala; sin ella no se pueden publicar actualizaciones.
+firma/

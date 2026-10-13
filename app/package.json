@@ -1,0 +1,16 @@
+{
+  "name": "libreta-isp-app",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "APK de Android (Capacitor) de la Libreta de Herramientas ISP, con envío sin conexión.",
+  "scripts": {
+    "preparar": "node scripts/preparar-www.mjs",
+    "apk": "node scripts/construir-apk.mjs"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.5.3",
+    "@capacitor/cli": "^8.5.3",
+    "@capacitor/core": "^8.5.3"
+  }
+}

@@ -7,6 +7,8 @@ const stepBTexto = document.getElementById('stepBTexto');
 const passwordExistente = document.getElementById('passwordExistente');
 const passwordNueva = document.getElementById('passwordNueva');
 
+const SIN_RED = 'No hay conexión con el servidor. Conéctate al wifi de la empresa e inténtalo de nuevo.';
+
 let numeroControlActual = '';
 let esNuevaContrasena = false;
 
@@ -67,7 +69,7 @@ document.getElementById('btnContinuar').addEventListener('click', async () => {
     stepA.style.display = 'none';
     stepB.style.display = 'block';
   } catch (err) {
-    mostrarErr(errBoxA, 'No se pudo validar el número de control.');
+    mostrarErr(errBoxA, SIN_RED);
   }
 });
 
@@ -121,11 +123,11 @@ btnEntrar.addEventListener('click', async () => {
       body: JSON.stringify({ numero_control: numeroControlActual, password })
     });
     const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(data.error || 'No se pudo iniciar sesión');
+    if (!res.ok) throw Object.assign(new Error(data.error || 'No se pudo iniciar sesión'), { servidor: true });
     try { sessionStorage.removeItem('isp_modo_admin'); } catch {}
     window.location.href = 'colaborador.html';
   } catch (err) {
     btnEntrar.disabled = false;
-    mostrarErr(errBoxB, err.message);
+    mostrarErr(errBoxB, err.servidor ? err.message : SIN_RED);
   }
 });

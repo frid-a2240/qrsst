@@ -13,3 +13,6 @@ logs/
 *.backup
 !db/schema.sql
 Guia_*.docx
+
+# APK publicada en el servidor (se copia a mano, no va a git)
+public/descargas/

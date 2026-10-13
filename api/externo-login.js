@@ -1,4 +1,4 @@
-import { signSession, setSessionCookie, COLAB_COOKIE_NAME } from '../lib/auth.js';
+import { signSession, setSessionCookie, horasSesion, COLAB_COOKIE_NAME } from '../lib/auth.js';
 
 const TIPOS = ['Cliente', 'Contratista', 'Visitante'];
 
@@ -29,13 +29,14 @@ export default async function handler(req, res) {
     return;
   }
 
+  const horas = horasSesion(req);
   const token = signSession({
     rol: 'colaborador',
     externo: true,
     numero_control: null,
     nombre,
     puesto: `Externo · ${tipo} · ${empresa}`
-  });
-  setSessionCookie(res, token, { name: COLAB_COOKIE_NAME });
+  }, horas);
+  setSessionCookie(res, token, { name: COLAB_COOKIE_NAME, hours: horas });
   res.status(200).json({ ok: true, nombre });
 }

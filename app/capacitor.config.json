@@ -1,0 +1,14 @@
+{
+  "appId": "com.isp.libretaherramientas",
+  "appName": "Libreta ISP",
+  "webDir": "www",
+  "server": {
+    "androidScheme": "https",
+    "cleartext": true
+  },
+  "plugins": {
+    "CapacitorHttp": { "enabled": true },
+    "CapacitorCookies": { "enabled": true },
+    "SystemBars": { "insetsHandling": "native" }
+  }
+}

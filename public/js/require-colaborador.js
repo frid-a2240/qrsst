@@ -29,12 +29,27 @@ window.colaboradorListo = (async function requireColaborador() {
     return window.colaboradorActual;
   }
 
-  const res = await fetch('api/colaborador-me');
+  let res;
+  try {
+    res = await fetch('api/colaborador-me');
+  } catch {
+    // Sin conexión: en la app se usa la última sesión guardada para poder llenar
+    // libretas en campo; se envían solas al volver a la red.
+    const guardada = window.APP && window.APP.sesionGuardada();
+    if (guardada) {
+      window.colaboradorActual = Object.assign({}, guardada, { sin_conexion: true });
+      return window.colaboradorActual;
+    }
+    window.location.href = 'colaborador-login.html';
+    return null;
+  }
   if (!res.ok) {
+    if (window.APP) window.APP.olvidarSesion();
     window.location.href = 'colaborador-login.html';
     return null;
   }
   const data = await res.json();
+  if (window.APP) window.APP.guardarSesion(data);
   window.colaboradorActual = data;
   return data;
 })();

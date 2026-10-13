@@ -1,6 +1,7 @@
 import { query, getPool } from '../lib/db.js';
 import { requireColaborador } from '../lib/auth.js';
 import { adjuntarHistorial, responsableDeSesion } from '../lib/acciones.js';
+import { envioId, llenadoEn } from '../lib/validar.js';
 
 const MAX_FOTOS = 6;
 const MAX_BYTES_FOTO = 3 * 1024 * 1024;
@@ -71,6 +72,16 @@ export default async function handler(req, res) {
     const client = await getPool().connect();
     try {
       await client.query('BEGIN');
+      // Reintento de la app de una entrega que ya había llegado: se responde como éxito.
+      const idEnvio = envioId(req.body?.envio_id);
+      if (idEnvio) {
+        const previo = await client.query('SELECT 1 FROM nmha_accion_eventos WHERE envio_id = $1', [idEnvio]);
+        if (previo.rows[0]) {
+          await client.query('ROLLBACK');
+          res.status(200).json({ ok: true });
+          return;
+        }
+      }
       const acc = await client.query(
         'SELECT estado FROM nmha_acciones WHERE id = $1 AND responsable_id = $2 FOR UPDATE',
         [accionId, responsable.id]
@@ -86,9 +97,9 @@ export default async function handler(req, res) {
         return;
       }
       const ev = await client.query(
-        `INSERT INTO nmha_accion_eventos (accion_id, tipo, comentario, autor)
-         VALUES ($1, 'entregada', $2, $3) RETURNING id`,
-        [accionId, comentario, colaborador.nombre]
+        `INSERT INTO nmha_accion_eventos (accion_id, tipo, comentario, autor, envio_id, created_at)
+         VALUES ($1, 'entregada', $2, $3, $4, COALESCE($5::timestamptz, now())) RETURNING id`,
+        [accionId, comentario, colaborador.nombre, idEnvio, llenadoEn(req.body?.llenado_en)]
       );
       for (const f of decodificadas) {
         await client.query(

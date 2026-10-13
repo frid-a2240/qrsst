@@ -29,7 +29,18 @@ function fechaCorta(f) {
 }
 
 async function cargar() {
-  const res = await fetch('api/mis-acciones');
+  let res;
+  try {
+    res = await fetch('api/mis-acciones');
+  } catch {
+    // Sin conexión (app): se muestra la última lista descargada.
+    acciones = (window.APP && window.APP.leer('mis_acciones')) || [];
+    await marcarPendientesDeEnvio();
+    avisoSinConexion(true);
+    render();
+    return;
+  }
+  avisoSinConexion(false);
   if (res.status === 401) {
     window.location.href = 'colaborador-login.html';
     return;
@@ -40,7 +51,35 @@ async function cargar() {
   }
   const data = await res.json();
   acciones = data.acciones || [];
+  if (window.APP) window.APP.guardar('mis_acciones', acciones);
+  await marcarPendientesDeEnvio();
   render();
+}
+
+// Entregas guardadas en el celular que aún no llegan al servidor.
+async function marcarPendientesDeEnvio() {
+  if (!window.APP) return;
+  const enCola = await window.APP.accionesEnCola();
+  acciones.forEach((a) => {
+    if (enCola.has(a.id)) {
+      a.estado = 'en_revision';
+      a.pendiente_envio = true;
+    }
+  });
+}
+
+function avisoSinConexion(mostrar) {
+  let aviso = document.getElementById('avisoSinConexion');
+  if (!mostrar) {
+    if (aviso) aviso.remove();
+    return;
+  }
+  if (aviso) return;
+  aviso = document.createElement('div');
+  aviso.id = 'avisoSinConexion';
+  aviso.className = 'ma-devuelta';
+  aviso.textContent = 'Sin conexión: se muestra la última lista descargada. Lo que entregues se enviará al conectarte.';
+  lista.before(aviso);
 }
 
 function render() {
@@ -65,7 +104,7 @@ function render() {
       <div class="ma-card est-${a.estado}" data-id="${a.id}">
         <div class="acc-top">
           <div class="acc-origen">${a.origen === 'inmediata' ? 'Acción inmediata' : 'Acción adicional sugerida'}</div>
-          ${estadoChip(a.estado)}
+          ${a.pendiente_envio ? '<span class="acc-estado pend">📤 Pendiente de envío</span>' : estadoChip(a.estado)}
         </div>
         <div class="ma-desc">${escHist(a.descripcion)}</div>
         ${devuelta ? `<div class="ma-devuelta"><b>Te la regresaron:</b> ${escHist(devuelta.comentario)}</div>` : ''}
@@ -199,6 +238,15 @@ function conectarFormulario(form) {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'No se pudo enviar');
       fotosPorAccion.delete(id);
+      if (data.en_cola) {
+        const accion = acciones.find((a) => a.id === id);
+        if (accion) {
+          accion.estado = 'en_revision';
+          accion.pendiente_envio = true;
+        }
+        render();
+        return;
+      }
       await cargar();
     } catch (err) {
       msg.textContent = err.message;

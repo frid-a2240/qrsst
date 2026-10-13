@@ -46,7 +46,8 @@ const MIME = {
   '.svg': 'image/svg+xml',
   '.ico': 'image/x-icon',
   '.woff2': 'font/woff2',
-  '.woff': 'font/woff'
+  '.woff': 'font/woff',
+  '.apk': 'application/vnd.android.package-archive'
 };
 const COMPRIMIBLES = new Set(['.html', '.js', '.css', '.json', '.svg']);
 
@@ -193,7 +194,8 @@ async function serveStatic(req, res, pathname) {
     res.setHeader('ETag', etag);
     // Imágenes y fuentes casi no cambian: un día en caché. HTML/CSS/JS se revalidan
     // siempre (respuesta 304 sin contenido si no cambiaron), así las actualizaciones llegan de inmediato.
-    const esRecurso = ext in MIME && !COMPRIMIBLES.has(ext);
+    // La APK se revalida siempre: al publicar una versión nueva debe bajarse la nueva.
+    const esRecurso = ext in MIME && !COMPRIMIBLES.has(ext) && ext !== '.apk';
     res.setHeader('Cache-Control', esRecurso ? 'public, max-age=86400' : 'no-cache');
     if (req.headers['if-none-match'] === etag) {
       res.statusCode = 304;

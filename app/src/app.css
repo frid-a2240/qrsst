@@ -1,0 +1,98 @@
+/* Solo en la APK: avisos de envíos pendientes, versión nueva y mensajes breves. */
+
+.app-pendientes {
+  position: fixed;
+  left: 12px;
+  right: 12px;
+  bottom: 12px;
+  z-index: 900;
+  max-width: 520px;
+  margin: 0 auto;
+  background: var(--navy);
+  color: #fff;
+  border-radius: 14px;
+  padding: 10px 12px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.25);
+  font-family: 'Nunito', sans-serif;
+  font-size: 14px;
+}
+.app-pend-fila {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.app-pend-nota {
+  margin-top: 6px;
+  font-size: 13px;
+  opacity: 0.85;
+}
+.app-pend-rechazo {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  font-size: 13px;
+}
+.app-pend-rechazo .app-pend-btn { margin-top: 8px; }
+.app-pend-btn {
+  flex-shrink: 0;
+  border: 0;
+  border-radius: 999px;
+  padding: 8px 14px;
+  background: var(--teal);
+  color: #fff;
+  font: inherit;
+  font-weight: 800;
+  text-decoration: none;
+  cursor: pointer;
+}
+.app-pend-btn.sec { background: rgba(255, 255, 255, 0.18); }
+
+.app-version {
+  position: sticky;
+  top: 0;
+  z-index: 950;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 14px;
+  background: var(--teal);
+  color: #fff;
+  font-family: 'Nunito', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+}
+.app-version .app-pend-btn { background: var(--navy); }
+
+.app-toast {
+  position: fixed;
+  left: 50%;
+  top: 16px;
+  z-index: 1000;
+  max-width: calc(100% - 32px);
+  transform: translate(-50%, -20px);
+  opacity: 0;
+  transition: opacity 0.3s, transform 0.3s;
+  background: #fff;
+  color: var(--navy);
+  border-radius: 12px;
+  padding: 10px 16px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.2);
+  font-family: 'Nunito', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+}
+.app-toast.visible { opacity: 1; transform: translate(-50%, 0); }
+
+.success-icon.en-cola { background: var(--navy); }
+
+.app-version-num {
+  position: fixed;
+  right: 8px;
+  bottom: 4px;
+  font-size: 10px;
+  color: rgba(128, 128, 128, 0.7);
+  font-family: 'Nunito', sans-serif;
+  pointer-events: none;
+}
