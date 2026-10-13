@@ -1,12 +1,19 @@
+// Panel de administración: menú lateral (Dashboard, Registros, Acciones, Mis acciones),
+// navegación por #hash para que el botón "atrás" y los enlaces funcionen.
 const listContainer = document.getElementById('listContainer');
 const detailOverlay = document.getElementById('detailOverlay');
 const detailSheet = document.getElementById('detailSheet');
 const tabs = document.querySelectorAll('.tab-btn[data-tipo]');
 const filtroDesde = document.getElementById('filtroDesde');
 const filtroHasta = document.getElementById('filtroHasta');
+const buscarRegistros = document.getElementById('buscarRegistros');
+const verMasRegistros = document.getElementById('verMasRegistros');
 
+const POR_PAGINA = 30;
 let tipoActual = 'art';
 let cacheRows = [];
+let totalRegistros = 0;
+let vistaActual = 'dashboard';
 
 const NMHA_TIPO_LABELS = {
   acto_inseguro: 'Acto inseguro',
@@ -35,41 +42,55 @@ function badge(texto, tipo) {
   return `<span class="badge ${tipo || ''}">${texto}</span>`;
 }
 
+function irALogin() {
+  window.location.href = 'login.html';
+}
+
 async function checkAuth() {
   const res = await fetch('../api/admin-me');
-  await res.json().catch(() => null);
+  const data = await res.json().catch(() => null);
   if (!res.ok) {
-    window.location.href = 'login.html';
+    irALogin();
     return false;
   }
+  const usuario = document.getElementById('admUsuario');
+  if (usuario && data) usuario.textContent = data.nombre || '';
   return true;
 }
 
+// ---------- Registros ----------
 let cargaSeq = 0;
 
-async function cargar() {
-  const tipoSolicitado = tipoActual;
-  const seq = ++cargaSeq;
-  listContainer.innerHTML = '<div class="loading">Cargando...</div>';
-  const params = new URLSearchParams({ tipo: tipoSolicitado });
+function paramsRegistros(offset) {
+  const params = new URLSearchParams({ tipo: tipoActual, limit: POR_PAGINA, offset });
   if (filtroDesde.value) params.set('desde', filtroDesde.value);
   if (filtroHasta.value) params.set('hasta', filtroHasta.value);
+  if (buscarRegistros.value.trim()) params.set('q', buscarRegistros.value.trim());
+  return params;
+}
 
-  const res = await fetch(`../api/admin-submissions?${params}`);
+async function cargar(agregar = false) {
+  const tipoSolicitado = tipoActual;
+  const seq = ++cargaSeq;
+  if (!agregar) listContainer.innerHTML = '<div class="loading">Cargando...</div>';
+  const res = await fetch(`../api/admin-submissions?${paramsRegistros(agregar ? cacheRows.length : 0)}`);
   if (res.status === 401) {
-    window.location.href = 'login.html';
+    irALogin();
     return;
   }
   const data = await res.json();
-
   if (seq !== cargaSeq || tipoSolicitado !== tipoActual) return;
-  cacheRows = data.rows || [];
+  cacheRows = agregar ? cacheRows.concat(data.rows || []) : (data.rows || []);
+  totalRegistros = data.total || 0;
   renderList();
 }
 
 function renderList() {
   const resultCount = document.getElementById('resultCount');
-  if (resultCount) resultCount.textContent = cacheRows.length ? `${cacheRows.length} resultado${cacheRows.length === 1 ? '' : 's'}` : '';
+  resultCount.textContent = totalRegistros
+    ? `${cacheRows.length < totalRegistros ? `${cacheRows.length} de ` : ''}${totalRegistros} resultado${totalRegistros === 1 ? '' : 's'}`
+    : '';
+  verMasRegistros.hidden = cacheRows.length >= totalRegistros;
 
   if (!cacheRows.length) {
     listContainer.innerHTML = '<div class="empty-state col-span-full">Sin libretas registradas todavía.</div>';
@@ -80,7 +101,7 @@ function renderList() {
     const card = document.createElement('div');
     card.className = 'submission-card';
     card.innerHTML = renderCardHtml(row);
-    card.addEventListener('click', () => openDetail(row));
+    card.addEventListener('click', () => openDetail(row, tipoActual));
     listContainer.appendChild(card);
   });
 }
@@ -144,18 +165,27 @@ function actualizarConteos(row, acciones) {
   cargarResumen();
 }
 
-const TIPO_TITULOS ={ art: 'ART', 'stop-work': 'Stop Work Authority', nmha: 'NMHA' };
+
+const TIPO_TITULOS = { art: 'ART', 'stop-work': 'Stop Work Authority', nmha: 'NMHA' };
 const VIEWER_RENDERERS = { art: renderArtViewer, 'stop-work': renderStopWorkViewer, nmha: renderNmhaViewer };
 
-function openDetail(row) {
-  const titulo = TIPO_TITULOS[tipoActual];
-  const viewerHtml = VIEWER_RENDERERS[tipoActual](row);
+function cerrarDetalle() {
+  if (!detailOverlay.classList.contains('open')) return;
+  detailOverlay.classList.remove('open');
+  // Lo que se haya asignado o revisado dentro del detalle se refleja en la vista de atrás.
+  if (vistaActual === 'acciones') cargarAccionesLista();
+  if (vistaActual === 'dashboard') cargarResumen();
+  actualizarBadges();
+}
+
+function openDetail(row, tipo) {
+  const viewerHtml = VIEWER_RENDERERS[tipo](row);
 
   detailSheet.innerHTML = `
     <div class="detail-sheet-grip"></div>
     <div class="detail-sheet-header flex items-center justify-between">
       <div>
-        <h3 class="!mb-0">${titulo}</h3>
+        <h3 class="!mb-0">${TIPO_TITULOS[tipo]}</h3>
         <div class="text-xs font-semibold text-gray-400">Enviado el ${fmtFechaHora(row.created_at)}</div>
       </div>
       <div class="flex items-center gap-2">
@@ -166,12 +196,12 @@ function openDetail(row) {
       </div>
     </div>
     <div class="sheet-wrap-inline">${viewerHtml}</div>
-    ${tipoActual === 'nmha' ? '<div class="sheet-wrap-inline" id="accionesPanel"><div class="loading">Cargando responsables...</div></div>' : ''}
+    ${tipo === 'nmha' ? '<div class="sheet-wrap-inline" id="accionesPanel"><div class="loading">Cargando responsables...</div></div>' : ''}
   `;
   detailOverlay.classList.add('open');
-  document.getElementById('closeDetailBtn').addEventListener('click', () => detailOverlay.classList.remove('open'));
+  document.getElementById('closeDetailBtn').addEventListener('click', cerrarDetalle);
   document.getElementById('printDetailBtn').addEventListener('click', () => window.print());
-  if (tipoActual === 'nmha') cargarAcciones(row);
+  if (tipo === 'nmha') cargarAcciones(row);
 }
 
 const ORIGENES = [
@@ -401,13 +431,6 @@ async function enviarAcciones(row, reenviar = false) {
   }
 }
 
-detailOverlay.addEventListener('click', (e) => {
-  if (e.target === detailOverlay) detailOverlay.classList.remove('open');
-});
-
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') detailOverlay.classList.remove('open');
-});
 
 function escapeHtml(str) {
   if (str === null || str === undefined) return '';
@@ -416,6 +439,15 @@ function escapeHtml(str) {
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;');
 }
+
+
+detailOverlay.addEventListener('click', (e) => {
+  if (e.target === detailOverlay) cerrarDetalle();
+});
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') cerrarDetalle();
+});
 
 tabs.forEach((btn) => {
   btn.addEventListener('click', () => {
@@ -426,7 +458,13 @@ tabs.forEach((btn) => {
   });
 });
 
-document.getElementById('filtrarBtn').addEventListener('click', cargar);
+document.getElementById('filtrarBtn').addEventListener('click', () => cargar());
+verMasRegistros.addEventListener('click', () => cargar(true));
+let esperaBusqueda;
+buscarRegistros.addEventListener('input', () => {
+  clearTimeout(esperaBusqueda);
+  esperaBusqueda = setTimeout(() => cargar(), 350);
+});
 
 document.getElementById('exportBtn').addEventListener('click', () => {
   const params = new URLSearchParams();
@@ -435,23 +473,115 @@ document.getElementById('exportBtn').addEventListener('click', () => {
   window.location.href = `../api/admin-export?${params}`;
 });
 
-document.getElementById('llenarLibretaBtn').addEventListener('click', () => {
-  try { sessionStorage.setItem('isp_modo_admin', '1'); } catch {}
-  window.location.href = '../colaborador.html';
+// ---------- Acciones (todas) ----------
+const accionesLista = document.getElementById('accionesLista');
+const filtroResponsable = document.getElementById('filtroResponsable');
+const buscarAcciones = document.getElementById('buscarAcciones');
+const verMasAcciones = document.getElementById('verMasAcciones');
+let estadoAcciones = 'en_revision';
+let accionesRows = [];
+let accionesTotal = 0;
+let accionesSeq = 0;
+
+function marcarChipEstado() {
+  document.querySelectorAll('#chipsEstado button').forEach((b) => {
+    b.classList.toggle('activo', b.dataset.estado === estadoAcciones);
+  });
+}
+
+async function cargarAccionesLista(agregar = false) {
+  const seq = ++accionesSeq;
+  const params = new URLSearchParams({ limit: POR_PAGINA, offset: agregar ? accionesRows.length : 0 });
+  if (estadoAcciones) params.set('estado', estadoAcciones);
+  if (filtroResponsable.value) params.set('responsable_id', filtroResponsable.value);
+  if (buscarAcciones.value.trim()) params.set('q', buscarAcciones.value.trim());
+  marcarChipEstado();
+  if (!agregar) accionesLista.innerHTML = '<div class="loading">Cargando...</div>';
+  const res = await fetch(`../api/admin-acciones?${params}`);
+  if (res.status === 401) {
+    irALogin();
+    return;
+  }
+  const data = await res.json();
+  if (seq !== accionesSeq) return;
+  accionesRows = agregar ? accionesRows.concat(data.rows) : data.rows;
+  accionesTotal = data.total;
+
+  const c = data.conteos;
+  const valores = { en_revision: c.en_revision, pendientes: c.pendientes, cerradas: c.cerradas, '': c.todas };
+  document.querySelectorAll('#chipsEstado button').forEach((b) => {
+    b.querySelector('b').textContent = valores[b.dataset.estado] ?? '';
+  });
+  const elegido = filtroResponsable.value;
+  filtroResponsable.innerHTML = '<option value="">Todos los responsables</option>' +
+    data.responsables.map((r) => `<option value="${r.id}">${escapeHtml(r.nombre)}</option>`).join('');
+  filtroResponsable.value = elegido;
+  renderAccionesLista();
+}
+
+function renderAccionesLista() {
+  document.getElementById('accionesCount').textContent = accionesTotal
+    ? `${accionesRows.length < accionesTotal ? `${accionesRows.length} de ` : ''}${accionesTotal} acci${accionesTotal === 1 ? 'ón' : 'ones'}`
+    : '';
+  verMasAcciones.hidden = accionesRows.length >= accionesTotal;
+  if (!accionesRows.length) {
+    accionesLista.innerHTML = `<div class="empty-state col-span-full">${estadoAcciones === 'en_revision'
+      ? 'No hay acciones esperando revisión. 👍' : 'No hay acciones con estos filtros.'}</div>`;
+    return;
+  }
+  accionesLista.innerHTML = '';
+  accionesRows.forEach((a) => {
+    const card = document.createElement('div');
+    card.className = `submission-card acc-card est-${a.estado}`;
+    card.innerHTML = `
+      <div class="row1">
+        <div class="titulo">${escapeHtml(a.descripcion)}</div>
+        ${estadoChip(a.estado)}
+      </div>
+      <div class="resumen"><b>${escapeHtml(a.responsable_nombre)}</b>${a.responsable_email ? '' : ' · sin correo'}</div>
+      <div class="resumen">NMHA del ${fmtFecha(a.fecha)} · ${escapeHtml(a.centro_trabajo)} · ${escapeHtml(a.area_especifica)}</div>
+      <div class="acc-card-pie">Asignada ${fmtFechaHora(a.created_at)}${a.ultimo_movimiento ? ` · último movimiento ${fmtFechaHora(a.ultimo_movimiento)}` : ''}</div>`;
+    card.addEventListener('click', () => abrirNmhaDeAccion(a.nmha_id));
+    accionesLista.appendChild(card);
+  });
+}
+
+async function abrirNmhaDeAccion(nmhaId) {
+  const res = await fetch(`../api/admin-submissions?tipo=nmha&id=${nmhaId}`);
+  if (!res.ok) return;
+  const data = await res.json();
+  if (data.rows && data.rows[0]) openDetail(data.rows[0], 'nmha');
+}
+
+document.querySelectorAll('#chipsEstado button').forEach((b) => {
+  b.addEventListener('click', () => {
+    estadoAcciones = b.dataset.estado;
+    history.replaceState(null, '', `#acciones/${estadoAcciones || 'todas'}`);
+    cargarAccionesLista();
+  });
+});
+filtroResponsable.addEventListener('change', () => cargarAccionesLista());
+verMasAcciones.addEventListener('click', () => cargarAccionesLista(true));
+let esperaAcciones;
+buscarAcciones.addEventListener('input', () => {
+  clearTimeout(esperaAcciones);
+  esperaAcciones = setTimeout(() => cargarAccionesLista(), 350);
 });
 
-document.getElementById('logoutBtn').addEventListener('click', async () => {
-  try { sessionStorage.removeItem('isp_modo_admin'); } catch {}
-  await fetch('../api/admin-logout', { method: 'POST' });
-  window.location.href = '../index.html';
-});
-
-window.addEventListener('pageshow', (e) => {
-  if (e.persisted) window.location.reload();
-});
+// Contadores del menú: acciones en revisión y "Mis acciones" abiertas.
+async function actualizarBadges() {
+  try {
+    const res = await fetch('../api/admin-acciones?estado=en_revision&limit=1');
+    if (res.ok) {
+      const data = await res.json();
+      document.querySelectorAll('[data-badge="revision"]').forEach((b) => { b.textContent = data.conteos.en_revision || ''; });
+    }
+  } catch {}
+  cargarMisAccionesAdmin();
+}
 
 // ---------- Mis acciones (administradora que también es responsable) ----------
-const misAccionesAdminBtn = document.getElementById('misAccionesAdminBtn');
+const misAccionesLista = document.getElementById('misAccionesLista');
 let misAccionesAdmin = [];
 
 async function cargarMisAccionesAdmin() {
@@ -459,13 +589,9 @@ async function cargarMisAccionesAdmin() {
   if (!res.ok) return;
   const data = await res.json();
   misAccionesAdmin = data.acciones || [];
-  if (!data.es_responsable) return;
   const abiertas = misAccionesAdmin.filter((a) => a.estado !== 'cerrada').length;
-  const count = document.getElementById('misAccionesAdminCount');
-  count.textContent = abiertas || '';
-  count.classList.toggle('cero', !abiertas);
-  misAccionesAdminBtn.classList.remove('hidden');
-  misAccionesAdminBtn.classList.add('flex');
+  document.querySelectorAll('[data-vista="mis-acciones"]').forEach((el) => el.classList.toggle('adm-oculto', !data.es_responsable));
+  document.querySelectorAll('[data-badge="mias"]').forEach((b) => { b.textContent = abiertas || ''; });
 }
 
 function renderMisAccionesAdmin() {
@@ -505,23 +631,11 @@ function renderMisAccionesAdmin() {
       </div>`;
   };
 
-  detailSheet.innerHTML = `
-    <div class="detail-sheet-grip"></div>
-    <div class="detail-sheet-header flex items-center justify-between">
-      <div>
-        <h3 class="!mb-0">Mis acciones</h3>
-        <div class="text-xs font-semibold text-gray-400">Acciones del NMHA que te asignaron. Tú misma las cierras.</div>
-      </div>
-      <button id="closeDetailBtn" title="Cerrar" class="w-9 h-9 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 text-lg font-bold">&times;</button>
-    </div>
-    <div class="sheet-wrap-inline">
-      ${abiertas.length ? abiertas.map(tarjeta).join('') : '<div class="empty-state">No tienes acciones por cerrar. 👍</div>'}
-      ${cerradas.length ? `<div class="acc-group-title" style="margin-top:18px;">Cerradas (${cerradas.length})</div>${cerradas.map(tarjeta).join('')}` : ''}
-    </div>`;
-  detailOverlay.classList.add('open');
-  document.getElementById('closeDetailBtn').addEventListener('click', () => detailOverlay.classList.remove('open'));
+  misAccionesLista.innerHTML = `
+    ${abiertas.length ? abiertas.map(tarjeta).join('') : '<div class="empty-state">No tienes acciones por cerrar. 👍</div>'}
+    ${cerradas.length ? `<div class="acc-group-title" style="margin-top:18px;">Cerradas (${cerradas.length})</div>${cerradas.map(tarjeta).join('')}` : ''}`;
 
-  detailSheet.querySelectorAll('.ma-form').forEach((form) => {
+  misAccionesLista.querySelectorAll('.ma-form').forEach((form) => {
     const selector = selectorFotos(form, 6);
     const msg = form.querySelector('.ma-msg');
     form.querySelector('.ma-cerrar').addEventListener('click', async (e) => {
@@ -545,8 +659,6 @@ function renderMisAccionesAdmin() {
         if (!res.ok) throw new Error(data.error || 'No se pudo cerrar la acción');
         await cargarMisAccionesAdmin();
         renderMisAccionesAdmin();
-        cargarResumen();
-        if (tipoActual === 'nmha') cargar();
       } catch (err) {
         msg.textContent = err.message;
         btn.disabled = false;
@@ -556,15 +668,53 @@ function renderMisAccionesAdmin() {
   });
 }
 
-misAccionesAdminBtn.addEventListener('click', async () => {
-  await cargarMisAccionesAdmin();
-  renderMisAccionesAdmin();
+// ---------- Navegación ----------
+const TITULOS_VISTA = { dashboard: 'Dashboard', registros: 'Registros', acciones: 'Acciones', 'mis-acciones': 'Mis acciones' };
+let registrosCargados = false;
+
+async function mostrarVista() {
+  const [vista, filtro] = location.hash.replace('#', '').split('/');
+  vistaActual = TITULOS_VISTA[vista] ? vista : 'dashboard';
+  document.querySelectorAll('.adm-vista').forEach((s) => { s.hidden = s.id !== `vista-${vistaActual}`; });
+  document.querySelectorAll('[data-vista]').forEach((a) => a.classList.toggle('activo', a.dataset.vista === vistaActual));
+  document.getElementById('admTituloMovil').textContent = TITULOS_VISTA[vistaActual];
+  window.scrollTo(0, 0);
+
+  if (vistaActual === 'dashboard') cargarResumen();
+  if (vistaActual === 'registros' && !registrosCargados) {
+    registrosCargados = true;
+    cargar();
+  }
+  if (vistaActual === 'acciones') {
+    if (filtro) estadoAcciones = filtro === 'todas' ? '' : filtro;
+    cargarAccionesLista();
+  }
+  if (vistaActual === 'mis-acciones') {
+    await cargarMisAccionesAdmin();
+    renderMisAccionesAdmin();
+  }
+}
+
+window.addEventListener('hashchange', mostrarVista);
+
+document.querySelectorAll('[data-accion="llenar"]').forEach((b) => b.addEventListener('click', () => {
+  try { sessionStorage.setItem('isp_modo_admin', '1'); } catch {}
+  window.location.href = '../colaborador.html';
+}));
+
+document.querySelectorAll('[data-accion="salir"]').forEach((b) => b.addEventListener('click', async () => {
+  try { sessionStorage.removeItem('isp_modo_admin'); } catch {}
+  await fetch('../api/admin-logout', { method: 'POST' });
+  window.location.href = '../index.html';
+}));
+
+window.addEventListener('pageshow', (e) => {
+  if (e.persisted) window.location.reload();
 });
 
 (async () => {
   const ok = await checkAuth();
   if (!ok) return;
-  cargar();
-  cargarResumen();
-  cargarMisAccionesAdmin();
+  mostrarVista();
+  actualizarBadges();
 })();

@@ -51,12 +51,12 @@ function leyenda(items) {
     `<span><i style="background:${color}"></i>${escR(texto)}</span>`).join('')}</div>`;
 }
 
-function tarjetaKpi(valor, etiqueta, color, nota) {
-  return `<div class="rs-kpi">
+function tarjetaKpi(valor, etiqueta, color, nota, enlace) {
+  return `<a class="rs-kpi" href="${enlace}">
     <div class="rs-kpi-etq"><i style="background:${color}"></i>${etiqueta}</div>
     <div class="rs-kpi-num">${valor}</div>
     ${nota ? `<div class="rs-kpi-nota">${nota}</div>` : ''}
-  </div>`;
+  </a>`;
 }
 
 function graficaResponsables(filas) {
@@ -187,10 +187,11 @@ async function cargarResumen() {
     raiz.innerHTML = `
       <div class="rs-kpis">
         ${tarjetaKpi(a.pendientes, 'Acciones por realizar', COLOR.pendientes,
-          a.atrasadas ? `<span style="color:${COLOR.atrasadas}">● ${a.atrasadas} con más de 7 días</span>` : 'Ninguna atrasada')}
-        ${tarjetaKpi(a.en_revision, 'En revisión', COLOR.en_revision, a.en_revision ? 'Esperan tu revisión' : 'Nada por revisar')}
-        ${tarjetaKpi(a.cerradas, 'Cerradas', COLOR.cerradas, `de ${total} asignada${total === 1 ? '' : 's'}`)}
-        ${tarjetaKpi(`${cumplimiento}%`, 'Cumplimiento', COLOR.cerradas, 'Cerradas / asignadas')}
+          a.atrasadas ? `<span style="color:${COLOR.atrasadas}">● ${a.atrasadas} con más de 7 días</span>` : 'Ninguna atrasada',
+          '#acciones/pendientes')}
+        ${tarjetaKpi(a.en_revision, 'En revisión', COLOR.en_revision, a.en_revision ? 'Esperan tu revisión' : 'Nada por revisar', '#acciones/en_revision')}
+        ${tarjetaKpi(a.cerradas, 'Cerradas', COLOR.cerradas, `de ${total} asignada${total === 1 ? '' : 's'}`, '#acciones/cerradas')}
+        ${tarjetaKpi(`${cumplimiento}%`, 'Cumplimiento', COLOR.cerradas, 'Cerradas / asignadas', '#acciones/todas')}
       </div>
       <div class="rs-graficas">
         <div class="rs-card"><div class="rs-titulo">Acciones por responsable</div>${graficaResponsables(d.por_responsable)}</div>
