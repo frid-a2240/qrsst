@@ -203,7 +203,7 @@ function responsableSelect(responsables) {
   const sel = document.createElement('select');
   sel.className = 'acc-select';
   sel.innerHTML = '<option value="">Selecciona responsable…</option>' + responsables
-    .map((r) => `<option value="${r.id}"${r.email ? '' : ' disabled'}>${escapeHtml(r.nombre)}${r.email ? '' : ' (sin correo)'}</option>`)
+    .map((r) => `<option value="${r.id}">${escapeHtml(r.nombre)}${r.email ? '' : ' (sin correo, lo ve en la app)'}</option>`)
     .join('');
   return sel;
 }
@@ -211,7 +211,7 @@ function responsableSelect(responsables) {
 function renderAccionesPanel(row, asignadas, responsables) {
   const panel = document.getElementById('accionesPanel');
   if (!panel) return;
-  const pendientes = asignadas.filter((a) => !a.correo_enviado).length;
+  const pendientes = asignadas.filter((a) => !a.correo_enviado && a.responsable_email).length;
 
   panel.innerHTML = `
     <div class="acc-panel">
@@ -227,7 +227,9 @@ function renderAccionesPanel(row, asignadas, responsables) {
               </div>
               <div class="acc-desc">${escapeHtml(a.descripcion)}</div>
               <div class="acc-resp">→ ${escapeHtml(a.responsable_nombre)}
-                ${a.correo_enviado ? '' : '<span class="acc-estado pend">Correo pendiente</span>'}
+                ${!a.responsable_email
+                  ? '<span class="acc-estado info">Sin correo · lo ve en la app</span>'
+                  : a.correo_enviado ? '' : '<span class="acc-estado pend">Correo pendiente</span>'}
               </div>
               ${historialHtml(a.eventos)}
               ${a.estado === 'en_revision' ? `
@@ -378,13 +380,16 @@ async function enviarAcciones(row, reenviar = false) {
     renderAccionesPanel(row, data.acciones, resp.responsables || []);
 
     const fallos = data.envios.filter((e) => !e.ok);
+    const enviados = data.envios.filter((e) => e.ok);
     const nuevoMsg = document.querySelector('#accionesPanel #accMsg');
     if (fallos.length) {
       nuevoMsg.className = 'acc-msg error';
       nuevoMsg.textContent = `Acciones guardadas, pero no se pudo enviar el correo a: ${fallos.map((f) => f.responsable).join(', ')}. Usa "Reintentar envío".`;
     } else {
       nuevoMsg.className = 'acc-msg ok';
-      nuevoMsg.textContent = `Listo. Correo enviado a: ${data.envios.map((e) => e.responsable).join(', ')}.`;
+      nuevoMsg.textContent = enviados.length
+        ? `Listo. Correo enviado a: ${enviados.map((e) => e.responsable).join(', ')}.`
+        : 'Listo. Las acciones ya aparecen en "Mis acciones" de cada responsable.';
     }
   } catch (err) {
     msg.className = 'acc-msg error';

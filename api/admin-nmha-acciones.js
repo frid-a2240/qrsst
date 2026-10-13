@@ -110,7 +110,7 @@ async function enviarPendientes(nmha, asignadoPor) {
   const pendientes = await query(
     `SELECT a.id, a.origen, a.descripcion, a.responsable_id, r.nombre, r.email
        FROM nmha_acciones a JOIN responsables r ON r.id = a.responsable_id
-      WHERE a.nmha_id = $1 AND a.correo_enviado = false
+      WHERE a.nmha_id = $1 AND a.correo_enviado = false AND r.email IS NOT NULL
       ORDER BY a.origen, a.id`,
     [nmha.id]
   );
@@ -123,12 +123,9 @@ async function enviarPendientes(nmha, asignadoPor) {
     porResponsable.get(row.responsable_id).acciones.push(row);
   }
 
+  // Quien no tiene correo no se incluye: ve sus acciones en "Mis acciones" (app o navegador).
   const envios = [];
   for (const resp of porResponsable.values()) {
-    if (!resp.email) {
-      envios.push({ responsable: resp.nombre, ok: false, error: 'No tiene correo registrado' });
-      continue;
-    }
     try {
       await sendMail({
         to: resp.email,
@@ -253,11 +250,11 @@ export default async function handler(req, res) {
 
       const ids = [...new Set(limpias.map((a) => a.responsable_id))];
       const validos = await query(
-        'SELECT id FROM responsables WHERE id = ANY($1::int[]) AND activo = true AND email IS NOT NULL',
+        'SELECT id FROM responsables WHERE id = ANY($1::int[]) AND activo = true',
         [ids.filter(Number.isInteger)]
       );
       if (validos.rows.length !== ids.length) {
-        res.status(400).json({ error: 'Selecciona un responsable (con correo) para cada acción.' });
+        res.status(400).json({ error: 'Selecciona un responsable para cada acción.' });
         return;
       }
 

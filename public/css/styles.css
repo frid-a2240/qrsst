@@ -962,6 +962,7 @@ h1 {
 .acc-estado { font-size: 11px; font-weight: 800; padding: 2px 8px; border-radius: 999px; }
 .acc-estado.ok { background: #d3f3e9; color: #0a7a5c; }
 .acc-estado.pend { background: #fbdde0; color: var(--red); }
+.acc-estado.info { background: #e6ecf3; color: var(--navy); }
 .acc-estado.asig { background: #fff3d1; color: #8a6100; }
 .acc-estado.rev { background: #dbe7ff; color: #1d4ed8; }
 .acc-msg { margin-top: 10px; font-size: 13px; font-weight: 700; }
