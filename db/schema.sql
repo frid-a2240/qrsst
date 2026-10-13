@@ -163,3 +163,13 @@ CREATE UNIQUE INDEX IF NOT EXISTS uq_art_envio ON art_submissions (envio_id);
 CREATE UNIQUE INDEX IF NOT EXISTS uq_stop_work_envio ON stop_work_submissions (envio_id);
 CREATE UNIQUE INDEX IF NOT EXISTS uq_nmha_envio ON nmha_submissions (envio_id);
 CREATE UNIQUE INDEX IF NOT EXISTS uq_accion_eventos_envio ON nmha_accion_eventos (envio_id);
+
+-- Fotos que toma quien reporta el NMHA (máximo 3 por reporte, comprimidas en el celular).
+CREATE TABLE IF NOT EXISTS nmha_fotos (
+  id          SERIAL PRIMARY KEY,
+  nmha_id     INTEGER NOT NULL REFERENCES nmha_submissions(id) ON DELETE CASCADE,
+  mime        TEXT NOT NULL,
+  datos       BYTEA NOT NULL,
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_nmha_fotos_nmha ON nmha_fotos (nmha_id);

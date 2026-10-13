@@ -124,5 +124,17 @@ function renderNmhaViewer(row) {
   page2 += vText(7.55, 57.06, 85.09, 22.15, row.acciones_sugeridas, { multiline: true });
   page2 += `</div>`;
 
-  return `<div class="viewer-meta">Reportó: ${metaConPuesto(row.reportado_por, row)}</div>` + page1 + page2;
+  return `<div class="viewer-meta">Reportó: ${metaConPuesto(row.reportado_por, row)}</div>` + page1 + page2 + fotosNmhaHtml(row.fotos, '../');
+}
+
+// Fotos tomadas al reportar; se abren en el visor de pantalla completa (acciones-historial.js).
+function fotosNmhaHtml(ids, base) {
+  if (!Array.isArray(ids) || !ids.length) return '';
+  return `<div class="nmha-fotos">
+    <div class="nmha-fotos-titulo">Fotos de lo observado (${ids.length})</div>
+    <div class="hist-fotos">${ids.map((id) => {
+      const src = `${base}api/nmha-foto?id=${Number(id)}`;
+      return `<button type="button" class="hist-foto" data-src="${src}"><img src="${src}" alt="Foto del reporte" loading="lazy"></button>`;
+    }).join('')}</div>
+  </div>`;
 }

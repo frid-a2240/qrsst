@@ -113,6 +113,8 @@ function render() {
           <div><b>Tipo:</b> ${escHist(tipos || '—')}</div>
           <div><b>Lo observado:</b> ${escHist(a.nmha_descripcion)}</div>
           <div><b>Asignó:</b> ${escHist(a.asignado_por)} · ${fechaHoraHist(a.created_at)}</div>
+          ${a.nmha_fotos && a.nmha_fotos.length ? `<div class="hist-fotos">${a.nmha_fotos.map((f) =>
+            `<button type="button" class="hist-foto" data-src="api/nmha-foto?id=${Number(f)}"><img src="api/nmha-foto?id=${Number(f)}" alt="Foto del reporte" loading="lazy"></button>`).join('')}</div>` : ''}
         </details>
         ${historialHtml(a.eventos)}
         ${GRUPOS.pendientes.includes(a.estado) ? formularioHtml(a.id) : ''}

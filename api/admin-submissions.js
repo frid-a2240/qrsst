@@ -45,7 +45,8 @@ export default async function handler(req, res) {
     const extra = tipo === 'nmha'
       ? `, (SELECT count(*) FROM nmha_acciones a WHERE a.nmha_id = t.id)::int AS acciones_asignadas
          , (SELECT count(*) FROM nmha_acciones a WHERE a.nmha_id = t.id AND a.estado = 'cerrada')::int AS acciones_cerradas
-         , (SELECT count(*) FROM nmha_acciones a WHERE a.nmha_id = t.id AND a.estado = 'en_revision')::int AS acciones_en_revision`
+         , (SELECT count(*) FROM nmha_acciones a WHERE a.nmha_id = t.id AND a.estado = 'en_revision')::int AS acciones_en_revision
+         , ARRAY(SELECT f.id FROM nmha_fotos f WHERE f.nmha_id = t.id ORDER BY f.id) AS fotos`
       : '';
     const result = await query(
       `SELECT t.*${extra} FROM ${table} t ${where} ORDER BY created_at DESC LIMIT 500`,

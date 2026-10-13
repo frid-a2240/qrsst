@@ -1,5 +1,5 @@
 // Arma la APK firmada lista para instalar.
-// Uso: npm run apk -- --servidor http://gacenssv03/QrLibreta
+// Uso: npm run apk -- --servidor http://192.168.4.13/QrLibreta
 //      (--depurar: APK de prueba con inspección remota del WebView; no se publica)
 // Resultado en app/dist/: LibretaISP.apk y version.json (los dos se copian a
 // public/descargas/ en el servidor).

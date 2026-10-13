@@ -91,6 +91,22 @@
           </div>
         </div>
 
+        <div class="fotos-box" id="nmhaFotos">
+          <div class="fotos-titulo">Fotos de lo observado <span>(opcional · máximo 3)</span></div>
+          <div class="ma-foto-btns">
+            <label class="ma-foto-btn">
+              <input type="file" accept="image/*" capture="environment" hidden>
+              📷 Tomar foto
+            </label>
+            <label class="ma-foto-btn">
+              <input type="file" accept="image/*" multiple hidden>
+              🖼️ Elegir de galería
+            </label>
+          </div>
+          <div class="ma-previews"></div>
+          <div class="fotos-msg"></div>
+        </div>
+
         <div class="sheet-actions">
           <button type="button" class="btn-prev" id="toStep1">&larr; Regresar</button>
           <button type="submit" class="btn-submit" id="submitBtn">Enviar alerta</button>
@@ -102,6 +118,7 @@
 
   <script src="js/reference-viewer.js"></script>
   <script src="js/require-colaborador.js"></script>
+  <script src="js/fotos.js"></script>
   <script src="js/nmha.js"></script>
 </body>
 </html>

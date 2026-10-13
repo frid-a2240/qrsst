@@ -297,10 +297,10 @@
 
   // Fotos de evidencia: el <img> no pasa por fetch, así que se descargan con la sesión
   // y se muestran desde memoria.
-  const RUTA_EVIDENCIA = '/api/evidencia';
+  const FOTOS_PROTEGIDAS = /(^|\/)api\/(evidencia|nmha-foto)\?/;
   async function cargarEvidencia(img) {
     const src = img.getAttribute('src') || '';
-    if (!src.includes(RUTA_EVIDENCIA)) return;
+    if (!FOTOS_PROTEGIDAS.test(src)) return;
     img.removeAttribute('src');
     try {
       const r = await window.fetch(src);

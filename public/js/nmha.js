@@ -5,6 +5,8 @@ const stepPill = document.getElementById('stepPill');
 const errorBox = document.getElementById('errorBox');
 const submitBtn = document.getElementById('submitBtn');
 const esencialesContainer = document.getElementById('esencialesContainer');
+const MAX_FOTOS_NMHA = 3;
+const selectorNmha = selectorFotos(document.getElementById('nmhaFotos'), MAX_FOTOS_NMHA);
 
 window.colaboradorListo.then((colaborador) => {
   if (!colaborador) return;
@@ -99,7 +101,8 @@ form.addEventListener('submit', async (e) => {
     esenciales_fallidos: [...selectedEsenciales].sort((a, b) => a - b),
     acciones_inmediatas: fd.get('acciones_inmediatas') || null,
     requiere_acciones_adicionales: form.dataset.requiere === 'si',
-    acciones_sugeridas: fd.get('acciones_sugeridas') || null
+    acciones_sugeridas: fd.get('acciones_sugeridas') || null,
+    fotos: selectorNmha.fotos.slice(0, MAX_FOTOS_NMHA)
   };
 
   submitBtn.disabled = true;

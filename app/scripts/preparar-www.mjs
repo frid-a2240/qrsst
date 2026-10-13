@@ -1,6 +1,6 @@
 // Copia las pantallas de ../public a www/ (lo que va dentro de la APK) y les inyecta
 // el puente de la app (src/app.js + src/app.css) con la dirección del servidor.
-// Uso: node scripts/preparar-www.mjs [--servidor http://gacenssv03/QrLibreta]
+// Uso: node scripts/preparar-www.mjs [--servidor http://192.168.4.13/QrLibreta]
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -13,7 +13,7 @@ const EXCLUIR = new Set(['admin', 'descargas']);
 
 export function servidorDeArgs(argv = process.argv) {
   const i = argv.indexOf('--servidor');
-  const valor = i !== -1 ? argv[i + 1] : process.env.LIBRETA_SERVIDOR || 'http://gacenssv03/QrLibreta';
+  const valor = i !== -1 ? argv[i + 1] : process.env.LIBRETA_SERVIDOR || 'http://192.168.4.13/QrLibreta';
   if (!/^https?:\/\/[^/]+/.test(valor || '')) throw new Error(`Dirección de servidor inválida: ${valor}`);
   return valor.replace(/\/+$/, '');
 }

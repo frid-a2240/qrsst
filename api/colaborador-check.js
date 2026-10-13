@@ -19,13 +19,19 @@ export default async function handler(req, res) {
 
   try {
     const result = await query(
-      'SELECT nombre, password_hash IS NOT NULL AS has_password FROM colaboradores WHERE numero_control = $1 AND activo',
+      'SELECT nombre, es_admin, password_hash IS NOT NULL AS has_password FROM colaboradores WHERE numero_control = $1 AND activo',
       [numeroControl]
     );
     const colaborador = result.rows[0];
     if (!colaborador) {
       registrarFallo(req, 'check');
       res.status(200).json({ exists: false });
+      return;
+    }
+    // Las administradoras capturan desde su panel ("Llenar libreta"), no como colaboradoras:
+    // así cada respuesta queda con un solo origen.
+    if (colaborador.es_admin) {
+      res.status(403).json({ error: 'Este número es de administrador. Entra con el botón "Admin" de la pantalla de inicio.' });
       return;
     }
     res.status(200).json({ exists: true, hasPassword: colaborador.has_password, nombre: colaborador.nombre });

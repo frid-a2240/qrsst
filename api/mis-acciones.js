@@ -25,7 +25,8 @@ export default async function handler(req, res) {
       const r = await query(
         `SELECT a.id, a.origen, a.descripcion, a.estado, a.asignado_por, a.created_at,
                 n.id AS nmha_id, n.fecha, n.tipo, n.centro_trabajo, n.area_especifica, n.descripcion AS nmha_descripcion,
-                n.reportado_por
+                n.reportado_por,
+                ARRAY(SELECT f.id FROM nmha_fotos f WHERE f.nmha_id = n.id ORDER BY f.id) AS nmha_fotos
            FROM nmha_acciones a JOIN nmha_submissions n ON n.id = a.nmha_id
           WHERE a.responsable_id = $1
           ORDER BY CASE a.estado WHEN 'devuelta' THEN 0 WHEN 'asignada' THEN 1 WHEN 'en_revision' THEN 2 ELSE 3 END,

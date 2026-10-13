@@ -59,7 +59,7 @@ function historialHtml(eventos) {
   document.addEventListener('click', (e) => {
     const btn = e.target.closest('.hist-foto');
     if (!btn) return;
-    visor.querySelector('img').src = `${EVIDENCIA_URL}?id=${btn.dataset.foto}`;
+    visor.querySelector('img').src = btn.dataset.src || `${EVIDENCIA_URL}?id=${btn.dataset.foto}`;
     visor.classList.add('open');
   });
 })();

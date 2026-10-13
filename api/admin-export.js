@@ -79,7 +79,8 @@ export default async function handler(req, res) {
     const [art, stopWork, nmha] = await Promise.all([
       query(`SELECT * FROM art_submissions ${where} ORDER BY created_at DESC`, params),
       query(`SELECT * FROM stop_work_submissions ${where} ORDER BY created_at DESC`, params),
-      query(`SELECT * FROM nmha_submissions ${where} ORDER BY created_at DESC`, params)
+      query(`SELECT t.*, (SELECT count(*) FROM nmha_fotos f WHERE f.nmha_id = t.id)::int AS num_fotos
+               FROM nmha_submissions t ${where} ORDER BY t.created_at DESC`, params)
     ]);
 
     const workbook = new ExcelJS.Workbook();
@@ -127,7 +128,7 @@ export default async function handler(req, res) {
     addHeader(nmhaSheet, [
       'Número de control', 'Puesto', 'Reportado por', 'Fecha', 'Tipo', 'Centro de trabajo', 'Área específica',
       'Descripción', 'Esenciales fallidos', 'Acciones inmediatas', 'Requiere acciones adicionales',
-      'Acciones sugeridas', 'Enviado el'
+      'Acciones sugeridas', 'Fotos', 'Enviado el'
     ]);
     nmha.rows.forEach((r) => {
       const tipos = (Array.isArray(r.tipo) ? r.tipo : []).map((t) => NMHA_TIPO_LABELS[t] || t).join(', ');
@@ -135,7 +136,7 @@ export default async function handler(req, res) {
       nmhaSheet.addRow([
         r.numero_control || '', r.puesto || '', r.reportado_por, fmtFecha(r.fecha), tipos, r.centro_trabajo,
         r.area_especifica, r.descripcion, fallidos, r.acciones_inmediatas || '',
-        siNo(r.requiere_acciones_adicionales), r.acciones_sugeridas || '', fmtFechaHora(r.created_at)
+        siNo(r.requiere_acciones_adicionales), r.acciones_sugeridas || '', r.num_fotos, fmtFechaHora(r.created_at)
       ]);
     });
     autoWidth(nmhaSheet);

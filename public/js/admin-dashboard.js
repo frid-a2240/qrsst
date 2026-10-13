@@ -120,6 +120,7 @@ function renderCardHtml(row) {
     <div style="margin-top:8px; display:flex; gap:6px; flex-wrap:wrap;">
       ${badge('Requiere acción: ' + (row.requiere_acciones_adicionales ? 'SI' : 'NO'), row.requiere_acciones_adicionales ? 'no' : 'si')}
       ${estadoAccionesBadge(row)}
+      ${row.fotos && row.fotos.length ? badge(`📷 ${row.fotos.length} foto${row.fotos.length === 1 ? '' : 's'}`, '') : ''}
     </div>
   `;
 }
@@ -140,6 +141,7 @@ function actualizarConteos(row, acciones) {
   row.acciones_asignadas = acciones.length;
   row.acciones_cerradas = acciones.filter((a) => a.estado === 'cerrada').length;
   row.acciones_en_revision = acciones.filter((a) => a.estado === 'en_revision').length;
+  cargarResumen();
 }
 
 const TIPO_TITULOS ={ art: 'ART', 'stop-work': 'Stop Work Authority', nmha: 'NMHA' };
@@ -448,7 +450,121 @@ window.addEventListener('pageshow', (e) => {
   if (e.persisted) window.location.reload();
 });
 
+// ---------- Mis acciones (administradora que también es responsable) ----------
+const misAccionesAdminBtn = document.getElementById('misAccionesAdminBtn');
+let misAccionesAdmin = [];
+
+async function cargarMisAccionesAdmin() {
+  const res = await fetch('../api/admin-mis-acciones');
+  if (!res.ok) return;
+  const data = await res.json();
+  misAccionesAdmin = data.acciones || [];
+  if (!data.es_responsable) return;
+  const abiertas = misAccionesAdmin.filter((a) => a.estado !== 'cerrada').length;
+  const count = document.getElementById('misAccionesAdminCount');
+  count.textContent = abiertas || '';
+  count.classList.toggle('cero', !abiertas);
+  misAccionesAdminBtn.classList.remove('hidden');
+  misAccionesAdminBtn.classList.add('flex');
+}
+
+function renderMisAccionesAdmin() {
+  const abiertas = misAccionesAdmin.filter((a) => a.estado !== 'cerrada');
+  const cerradas = misAccionesAdmin.filter((a) => a.estado === 'cerrada');
+  const tarjeta = (a) => {
+    const tipos = (a.tipo || []).map(nmhaTipoLabel).join(', ');
+    return `
+      <div class="ma-card est-${a.estado}" data-id="${a.id}">
+        <div class="acc-top">
+          <div class="acc-origen">${a.origen === 'inmediata' ? 'Acción inmediata' : 'Acción adicional sugerida'}</div>
+          ${estadoChip(a.estado)}
+        </div>
+        <div class="ma-desc">${escapeHtml(a.descripcion)}</div>
+        <details class="ma-nmha">
+          <summary>NMHA del ${fmtFecha(a.fecha)} · ${escapeHtml(a.centro_trabajo)} · ${escapeHtml(a.area_especifica)}</summary>
+          <div><b>Tipo:</b> ${escapeHtml(tipos || '—')}</div>
+          <div><b>Lo observado:</b> ${escapeHtml(a.nmha_descripcion)}</div>
+          <div><b>Asignó:</b> ${escapeHtml(a.asignado_por)} · ${fmtFechaHora(a.created_at)}</div>
+          ${a.nmha_fotos && a.nmha_fotos.length ? `<div class="hist-fotos">${a.nmha_fotos.map((f) =>
+            `<button type="button" class="hist-foto" data-src="../api/nmha-foto?id=${Number(f)}"><img src="../api/nmha-foto?id=${Number(f)}" alt="Foto del reporte" loading="lazy"></button>`).join('')}</div>` : ''}
+        </details>
+        ${historialHtml(a.eventos)}
+        ${a.estado !== 'cerrada' ? `
+          <div class="ma-form" data-id="${a.id}">
+            <div class="ma-form-title">Cerrar acción</div>
+            <div class="ma-foto-btns">
+              <label class="ma-foto-btn"><input type="file" accept="image/*" capture="environment" hidden>📷 Tomar foto</label>
+              <label class="ma-foto-btn"><input type="file" accept="image/*" multiple hidden>🖼️ Elegir de galería</label>
+            </div>
+            <div class="ma-previews"></div>
+            <div class="fotos-msg"></div>
+            <textarea class="acc-text ma-coment" rows="3" maxlength="2000" placeholder="Comentario: describe lo que se realizó"></textarea>
+            <button type="button" class="acc-btn ma-cerrar">Cerrar acción ✓</button>
+            <div class="acc-msg ma-msg"></div>
+          </div>` : ''}
+      </div>`;
+  };
+
+  detailSheet.innerHTML = `
+    <div class="detail-sheet-grip"></div>
+    <div class="detail-sheet-header flex items-center justify-between">
+      <div>
+        <h3 class="!mb-0">Mis acciones</h3>
+        <div class="text-xs font-semibold text-gray-400">Acciones del NMHA que te asignaron. Tú misma las cierras.</div>
+      </div>
+      <button id="closeDetailBtn" title="Cerrar" class="w-9 h-9 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 text-lg font-bold">&times;</button>
+    </div>
+    <div class="sheet-wrap-inline">
+      ${abiertas.length ? abiertas.map(tarjeta).join('') : '<div class="empty-state">No tienes acciones por cerrar. 👍</div>'}
+      ${cerradas.length ? `<div class="acc-group-title" style="margin-top:18px;">Cerradas (${cerradas.length})</div>${cerradas.map(tarjeta).join('')}` : ''}
+    </div>`;
+  detailOverlay.classList.add('open');
+  document.getElementById('closeDetailBtn').addEventListener('click', () => detailOverlay.classList.remove('open'));
+
+  detailSheet.querySelectorAll('.ma-form').forEach((form) => {
+    const selector = selectorFotos(form, 6);
+    const msg = form.querySelector('.ma-msg');
+    form.querySelector('.ma-cerrar').addEventListener('click', async (e) => {
+      const btn = e.currentTarget;
+      const comentario = form.querySelector('.ma-coment').value.trim();
+      msg.className = 'acc-msg ma-msg error';
+      if (!comentario) {
+        msg.textContent = 'Escribe un comentario de lo que se realizó.';
+        return;
+      }
+      msg.textContent = '';
+      btn.disabled = true;
+      btn.textContent = 'Cerrando...';
+      try {
+        const res = await fetch('../api/admin-mis-acciones', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ accion_id: Number(form.dataset.id), comentario, fotos: selector.fotos })
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || 'No se pudo cerrar la acción');
+        await cargarMisAccionesAdmin();
+        renderMisAccionesAdmin();
+        cargarResumen();
+        if (tipoActual === 'nmha') cargar();
+      } catch (err) {
+        msg.textContent = err.message;
+        btn.disabled = false;
+        btn.textContent = 'Cerrar acción ✓';
+      }
+    });
+  });
+}
+
+misAccionesAdminBtn.addEventListener('click', async () => {
+  await cargarMisAccionesAdmin();
+  renderMisAccionesAdmin();
+});
+
 (async () => {
   const ok = await checkAuth();
-  if (ok) cargar();
+  if (!ok) return;
+  cargar();
+  cargarResumen();
+  cargarMisAccionesAdmin();
 })();

@@ -1,9 +1,9 @@
-// Carga como responsables (a quienes se asignan acciones del NMHA) a los empleados
-// del roster con alguno de los PUESTOS de abajo. Quien ya no tenga uno de esos
-// puestos queda inactivo. No toca el email ni las filas marcadas es_prueba.
-// Uso: node --env-file=.env scripts/seed-responsables.js roster.json
+// Carga como responsables (a quienes se asignan acciones del NMHA y tienen "Mis acciones")
+// a los empleados activos cuyo puesto está en PUESTOS o empieza con "TECNICO"/"TÉCNICO".
+// Lee de la tabla colaboradores, así que corre igual en la laptop que en el servidor.
+// Quien ya no tenga uno de esos puestos queda inactivo. No toca el email ni las filas es_prueba.
+// Uso: node --env-file=.env scripts/seed-responsables.js
 
-import fs from 'node:fs';
 import { getPool } from '../lib/db.js';
 
 // Tal como vienen (recortados) en la columna Puesto del listado de RH.
@@ -19,26 +19,27 @@ const PUESTOS = [
   'SUPERVISOR DE SEGURIDAD E'
 ];
 
-const [, , jsonPath] = process.argv;
-
-if (!jsonPath) {
-  console.error('Uso: node scripts/seed-responsables.js ruta/al/roster.json');
-  process.exit(1);
+function normalizar(puesto) {
+  return String(puesto || '').normalize('NFD').replace(/[̀-ͯ]/g, '').trim().toUpperCase();
 }
 
-const roster = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
+function esResponsable(puesto) {
+  const p = normalizar(puesto);
+  return PUESTOS.includes(p) || p.startsWith('TECNICO');
+}
+
 const pool = getPool();
+const { rows } = await pool.query('SELECT numero_control, nombre, puesto FROM colaboradores WHERE activo');
 const vistos = [];
 
-for (const row of roster) {
-  if (!PUESTOS.includes(String(row.puesto || '').trim().toUpperCase())) continue;
-  const numeroControl = String(row.numero_control).trim();
-  vistos.push(numeroControl);
+for (const row of rows) {
+  if (!esResponsable(row.puesto)) continue;
+  vistos.push(row.numero_control);
   await pool.query(
     `INSERT INTO responsables (numero_control, nombre)
      VALUES ($1, $2)
      ON CONFLICT (numero_control) DO UPDATE SET nombre = EXCLUDED.nombre, activo = true`,
-    [numeroControl, String(row.nombre).trim()]
+    [row.numero_control, row.nombre]
   );
 }
 
@@ -48,5 +49,5 @@ const bajas = await pool.query(
   [vistos]
 );
 
-console.log(`Responsables cargados: ${vistos.length}. Desactivados: ${bajas.rowCount}.`);
+console.log(`Responsables activos: ${vistos.length}. Desactivados: ${bajas.rowCount}.`);
 await pool.end();

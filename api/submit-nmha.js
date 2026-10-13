@@ -1,8 +1,10 @@
-import { query } from '../lib/db.js';
+import { getPool } from '../lib/db.js';
+import { decodificarFotos } from '../lib/fotos.js';
 import { autorDelEnvio } from '../lib/autor.js';
 import { esFecha, texto, envioId, llenadoEn } from '../lib/validar.js';
 
 const TIPOS = ['acto_inseguro', 'condicion_insegura', 'casi_incidente', 'mejora'];
+const MAX_FOTOS = 3;
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -38,14 +40,23 @@ export default async function handler(req, res) {
     .filter((n) => Number.isInteger(n) && n >= 1 && n <= 12)
     .sort((x, y) => x - y);
 
+  const { fotos, error: errorFotos } = decodificarFotos(b.fotos, MAX_FOTOS);
+  if (errorFotos) {
+    res.status(400).json({ error: errorFotos });
+    return;
+  }
+
+  const client = await getPool().connect();
   try {
-    await query(
+    await client.query('BEGIN');
+    const nuevo = await client.query(
       `INSERT INTO nmha_submissions
         (fecha, tipo, reportado_por, centro_trabajo, area_especifica, descripcion,
          esenciales_fallidos, acciones_inmediatas, requiere_acciones_adicionales, acciones_sugeridas,
          numero_control, puesto, envio_id, created_at)
        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,COALESCE($14::timestamptz, now()))
-       ON CONFLICT (envio_id) DO NOTHING`,
+       ON CONFLICT (envio_id) DO NOTHING
+       RETURNING id`,
       [
         b.fecha, tipos, colaborador.nombre, centro, area, descripcion, esenciales,
         texto(b.acciones_inmediatas, 5000) || null,
@@ -55,9 +66,20 @@ export default async function handler(req, res) {
         envioId(b.envio_id), llenadoEn(b.llenado_en)
       ]
     );
+    // Si es un reintento ya recibido (mismo envio_id) no hay fila nueva ni fotos que guardar.
+    const nmhaId = nuevo.rows[0] && nuevo.rows[0].id;
+    if (nmhaId) {
+      for (const f of fotos) {
+        await client.query('INSERT INTO nmha_fotos (nmha_id, mime, datos) VALUES ($1, $2, $3)', [nmhaId, f.mime, f.datos]);
+      }
+    }
+    await client.query('COMMIT');
     res.status(201).json({ ok: true });
   } catch (err) {
+    await client.query('ROLLBACK').catch(() => {});
     console.error(err);
     res.status(500).json({ error: 'No se pudo guardar la alerta' });
+  } finally {
+    client.release();
   }
 }

@@ -9,6 +9,15 @@ export default async function handler(req, res) {
     return;
   }
 
+  // Una sesión de colaborador abierta antes de que la persona fuera administradora deja de servir.
+  if (colaborador.numero_control) {
+    const admin = await query('SELECT 1 FROM colaboradores WHERE numero_control = $1 AND es_admin', [colaborador.numero_control]);
+    if (admin.rows[0]) {
+      res.status(401).json({ error: 'No autenticado' });
+      return;
+    }
+  }
+
   let esResponsable = false;
   let accionesPendientes = 0;
   try {

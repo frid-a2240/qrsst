@@ -26,13 +26,18 @@ export default async function handler(req, res) {
 
   try {
     const result = await query(
-      'SELECT id, numero_control, nombre, puesto, password_hash FROM colaboradores WHERE numero_control = $1 AND activo',
+      'SELECT id, numero_control, nombre, puesto, password_hash, es_admin FROM colaboradores WHERE numero_control = $1 AND activo',
       [numeroControl]
     );
     const colaborador = result.rows[0];
     if (!colaborador) {
       registrarFallo(req, numeroControl);
       res.status(404).json({ error: 'Número de control no reconocido' });
+      return;
+    }
+
+    if (colaborador.es_admin) {
+      res.status(403).json({ error: 'Este número es de administrador. Entra con el botón "Admin" de la pantalla de inicio.' });
       return;
     }
 

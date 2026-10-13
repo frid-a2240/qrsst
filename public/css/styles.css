@@ -1196,3 +1196,66 @@ h1 {
 
 .empty-state { text-align: center; color: var(--text-muted); padding: 40px 20px; font-weight: 600; }
 .loading { text-align: center; color: var(--text-muted); padding: 30px; font-weight: 600; }
+
+/* Fotos del NMHA (debajo de la hoja 2) */
+.fotos-box {
+  max-width: 100%;
+  margin: 14px 0 0;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 14px;
+}
+.fotos-titulo { font-family: var(--font-head); font-weight: 800; color: var(--navy); font-size: 15px; margin-bottom: 10px; }
+.fotos-titulo span { font-family: var(--font-body); font-weight: 600; font-size: 12px; color: var(--text-muted); }
+.fotos-box .ma-foto-btn { font-family: var(--font-body); }
+.fotos-msg { font-size: 13px; color: var(--red); font-weight: 700; }
+.fotos-msg:empty { display: none; }
+.nmha-fotos { margin-top: 14px; background: #fff; border: 1px solid var(--border); border-radius: 14px; padding: 12px; }
+.nmha-fotos-titulo { font-weight: 800; font-size: 13px; color: var(--navy); margin-bottom: 8px; }
+
+/* ---------- Resumen del panel de administración ---------- */
+.rs-kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 12px; }
+.rs-kpi, .rs-card {
+  background: #fff; border: 1px solid #e3e8ef; border-radius: 16px; padding: 14px 16px;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+}
+.rs-kpi-etq { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; color: #52514e; }
+.rs-kpi-etq i, .rs-leyenda i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+.rs-kpi-num { font-size: 30px; font-weight: 800; color: #0b0b0b; line-height: 1.15; margin-top: 4px; }
+.rs-kpi-nota { font-size: 11.5px; font-weight: 600; color: #898781; margin-top: 2px; }
+.rs-graficas { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.rs-titulo { font-size: 13px; font-weight: 800; color: #0b0b0b; }
+.rs-sub { font-size: 11.5px; font-weight: 600; color: #898781; margin-top: 2px; }
+.rs-leyenda { display: flex; flex-wrap: wrap; gap: 10px; margin: 8px 0 6px; font-size: 11.5px; font-weight: 600; color: #52514e; }
+.rs-leyenda span { display: inline-flex; align-items: center; gap: 5px; }
+.rs-svg { width: 100%; height: auto; display: block; overflow: visible; }
+.rs-svg text { font-family: inherit; }
+.rs-etq { font-size: 10.5px; font-weight: 600; fill: #52514e; }
+.rs-val { font-size: 10.5px; font-weight: 800; fill: #0b0b0b; }
+.rs-eje { font-size: 9.5px; font-weight: 600; fill: #898781; font-variant-numeric: tabular-nums; }
+.rs-vacio { font-size: 13px; font-weight: 600; color: #898781; padding: 16px 0; }
+.rs-tabla { margin-top: 6px; font-size: 11.5px; color: #52514e; }
+.rs-tabla summary { cursor: pointer; font-weight: 700; }
+.rs-tabla table { width: 100%; border-collapse: collapse; margin-top: 6px; font-variant-numeric: tabular-nums; }
+.rs-tabla th, .rs-tabla td { text-align: right; padding: 3px 4px; border-bottom: 1px solid #e1e0d9; }
+.rs-tabla th:first-child, .rs-tabla td:first-child { text-align: left; }
+.rs-tooltip {
+  position: fixed; z-index: 1000; display: none; pointer-events: none;
+  background: #0b0b0b; color: #fff; font-size: 12px; line-height: 1.45; font-weight: 600;
+  padding: 7px 10px; border-radius: 8px; box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2); max-width: 240px;
+}
+@media (max-width: 960px) {
+  .rs-graficas { grid-template-columns: 1fr; }
+}
+@media (max-width: 640px) {
+  .rs-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .rs-kpi-num { font-size: 26px; }
+}
+
+.ma-admin-count {
+  min-width: 20px; height: 20px; padding: 0 6px; border-radius: 999px;
+  background: var(--red); color: #fff; font-size: 11px; font-weight: 800;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.ma-admin-count.cero, .ma-admin-count:empty { display: none; }
