@@ -65,7 +65,7 @@ form.addEventListener('submit', async (e) => {
   submitBtn.textContent = 'Enviando...';
 
   try {
-    const res = await fetch('/api/submit-stop-work', {
+    const res = await fetch('api/submit-stop-work', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)

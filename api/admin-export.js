@@ -1,6 +1,7 @@
 import ExcelJS from 'exceljs';
 import { query } from '../lib/db.js';
 import { requireAdmin } from '../lib/auth.js';
+import { esFecha } from '../lib/validar.js';
 
 const NMHA_TIPO_LABELS = {
   acto_inseguro: 'Acto inseguro',
@@ -17,7 +18,7 @@ function siNo(value) {
 
 function fmtFecha(f) {
   if (!f) return '';
-  return new Date(f).toISOString().slice(0, 10);
+  return String(f).slice(0, 10);
 }
 
 function fmtFechaHora(ts) {
@@ -28,11 +29,11 @@ function fmtFechaHora(ts) {
 function buildWhere(req) {
   const conditions = [];
   const params = [];
-  if (req.query.desde) {
+  if (esFecha(req.query.desde)) {
     params.push(req.query.desde);
     conditions.push(`fecha >= $${params.length}`);
   }
-  if (req.query.hasta) {
+  if (esFecha(req.query.hasta)) {
     params.push(req.query.hasta);
     conditions.push(`fecha <= $${params.length}`);
   }
@@ -140,7 +141,9 @@ export default async function handler(req, res) {
     autoWidth(nmhaSheet);
 
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-    res.setHeader('Content-Disposition', `attachment; filename="libretas-${fmtFecha(new Date())}.xlsx"`);
+    const hoy = new Date();
+    const hoyLocal = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}-${String(hoy.getDate()).padStart(2, '0')}`;
+    res.setHeader('Content-Disposition', `attachment; filename="libretas-${hoyLocal}.xlsx"`);
     await workbook.xlsx.write(res);
     res.end();
   } catch (err) {

@@ -146,3 +146,9 @@ ALTER TABLE responsables ADD COLUMN IF NOT EXISTS es_prueba BOOLEAN NOT NULL DEF
 -- Empleados que ya no vienen en el listado de RH quedan inactivos (no pueden entrar).
 ALTER TABLE colaboradores ADD COLUMN IF NOT EXISTS activo BOOLEAN NOT NULL DEFAULT true;
 ALTER TABLE colaboradores ADD COLUMN IF NOT EXISTS departamento TEXT;
+
+-- Índices para las consultas más frecuentes (listas del panel, "Mis acciones").
+CREATE INDEX IF NOT EXISTS idx_art_created ON art_submissions (created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_stop_work_created ON stop_work_submissions (created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_nmha_created ON nmha_submissions (created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_nmha_acciones_responsable ON nmha_acciones (responsable_id, estado);

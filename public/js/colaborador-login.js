@@ -42,12 +42,16 @@ document.getElementById('btnContinuar').addEventListener('click', async () => {
   }
 
   try {
-    const res = await fetch('/api/colaborador-check', {
+    const res = await fetch('api/colaborador-check', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ numero_control: numeroControl })
     });
     const data = await res.json();
+    if (!res.ok) {
+      mostrarErr(errBoxA, data.error || 'No se pudo validar el número de control.');
+      return;
+    }
     if (!data.exists) {
       mostrarErr(errBoxA, 'Número de control no reconocido. Verifica con tu supervisor.');
       return;
@@ -74,7 +78,19 @@ document.getElementById('btnCambiarNumero').addEventListener('click', (e) => {
   ocultarErr(errBoxB);
 });
 
-document.getElementById('btnEntrar').addEventListener('click', async () => {
+inpNumeroControl.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') document.getElementById('btnContinuar').click();
+});
+['inpPassword', 'inpPasswordNueva', 'inpPasswordConfirma'].forEach((id) => {
+  document.getElementById(id).addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') document.getElementById('btnEntrar').click();
+  });
+});
+
+const btnEntrar = document.getElementById('btnEntrar');
+
+btnEntrar.addEventListener('click', async () => {
+  if (btnEntrar.disabled) return;
   ocultarErr(errBoxB);
   let password;
   if (esNuevaContrasena) {
@@ -97,16 +113,19 @@ document.getElementById('btnEntrar').addEventListener('click', async () => {
     }
   }
 
+  btnEntrar.disabled = true;
   try {
-    const res = await fetch('/api/colaborador-auth', {
+    const res = await fetch('api/colaborador-auth', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ numero_control: numeroControlActual, password })
     });
-    if (!res.ok) throw new Error((await res.json()).error || 'No se pudo iniciar sesión');
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || 'No se pudo iniciar sesión');
     try { sessionStorage.removeItem('isp_modo_admin'); } catch {}
     window.location.href = 'colaborador.html';
   } catch (err) {
+    btnEntrar.disabled = false;
     mostrarErr(errBoxB, err.message);
   }
 });

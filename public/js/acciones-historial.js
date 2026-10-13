@@ -1,6 +1,10 @@
 // Piezas compartidas entre el panel admin y "Mis acciones": etiquetas de estado,
 // historial de entregas/revisiones con fotos, y visor de foto a pantalla completa.
 
+// Se usa desde / y desde /admin/: la ruta de la API se resuelve respecto a este script
+// (public/js/), así funciona también bajo el prefijo de IIS.
+const EVIDENCIA_URL = new URL('../api/evidencia', document.currentScript.src).pathname;
+
 const ESTADO_ACCION = {
   asignada: { texto: 'Asignada', clase: 'asig' },
   en_revision: { texto: 'En revisión', clase: 'rev' },
@@ -38,7 +42,7 @@ function historialHtml(eventos) {
       <div class="hist-head"><b>${TITULO_EVENTO[ev.tipo] || ev.tipo}</b> · ${escHist(ev.autor)} · ${fechaHoraHist(ev.created_at)}</div>
       ${ev.comentario ? `<div class="hist-coment">${escHist(ev.comentario)}</div>` : ''}
       ${ev.evidencias && ev.evidencias.length ? `<div class="hist-fotos">${ev.evidencias.map((id) =>
-        `<button type="button" class="hist-foto" data-foto="${Number(id)}"><img src="/api/evidencia?id=${Number(id)}" alt="Evidencia" loading="lazy"></button>`).join('')}</div>` : ''}
+        `<button type="button" class="hist-foto" data-foto="${Number(id)}"><img src="${EVIDENCIA_URL}?id=${Number(id)}" alt="Evidencia" loading="lazy"></button>`).join('')}</div>` : ''}
     </div>`).join('')}</div>`;
 }
 
@@ -55,7 +59,7 @@ function historialHtml(eventos) {
   document.addEventListener('click', (e) => {
     const btn = e.target.closest('.hist-foto');
     if (!btn) return;
-    visor.querySelector('img').src = `/api/evidencia?id=${btn.dataset.foto}`;
+    visor.querySelector('img').src = `${EVIDENCIA_URL}?id=${btn.dataset.foto}`;
     visor.classList.add('open');
   });
 })();

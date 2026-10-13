@@ -29,7 +29,7 @@ function fechaCorta(f) {
 }
 
 async function cargar() {
-  const res = await fetch('/api/mis-acciones');
+  const res = await fetch('api/mis-acciones');
   if (res.status === 401) {
     window.location.href = 'colaborador-login.html';
     return;
@@ -191,7 +191,7 @@ function conectarFormulario(form) {
     btn.disabled = true;
     btn.textContent = 'Enviando...';
     try {
-      const res = await fetch('/api/mis-acciones', {
+      const res = await fetch('api/mis-acciones', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ accion_id: id, comentario, fotos })

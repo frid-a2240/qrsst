@@ -4,7 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "node --env-file=.env scripts/dev-server.js",
+    "start": "node --env-file=.env scripts/dev-server.js",
+    "dev": "node --env-file=.env scripts/dev-server.js --dev",
+    "build:css": "tailwindcss -c tailwind.config.cjs -i estilos/admin.css -o public/css/admin.css --minify",
     "create-admin": "node --env-file=.env scripts/create-admin.js",
     "seed-colaboradores": "node --env-file=.env scripts/seed-colaboradores.js",
     "seed-responsables": "node --env-file=.env scripts/seed-responsables.js"
@@ -15,5 +17,8 @@
     "jsonwebtoken": "^9.0.2",
     "nodemailer": "^10.0.12",
     "pg": "^8.11.5"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.17"
   }
 }

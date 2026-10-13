@@ -4,14 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Panel de Libretas - ISP</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<script>
-    tailwind.config = { theme: { extend: { colors: { brand: {
-        50:'#eff6ff',100:'#dbeafe',500:'#00b4a8',600:'#00a8a0',700:'#00857f'
-    }}, fontFamily: { sans: ['Montserrat','system-ui','sans-serif'] } } } }
-</script>
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="icon" type="image/png" sizes="32x32" href="../img/icono-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="../img/icono-192.png">
+<link rel="apple-touch-icon" href="../img/icono-180.png">
 <link rel="stylesheet" href="../css/styles.css">
+<link rel="stylesheet" href="../css/admin.css">
 <style>
   body { font-family: 'Montserrat', system-ui, sans-serif; background: #F4F6F9; }
   .sheet-wrap-inline { max-width: 460px; margin: 0 auto; }
@@ -19,21 +16,21 @@
 </head>
 <body class="antialiased">
   <header class="bg-[#1E2D44] text-white sticky top-0 z-40 shadow-md">
-    <div class="max-w-6xl mx-auto px-5 h-16 flex items-center justify-between">
+    <div class="max-w-6xl mx-auto px-4 sm:px-5 h-16 flex items-center justify-between gap-3">
       <div class="flex items-center gap-3">
-        <img src="../img/logo-mark-white.png" class="w-8 h-8 object-contain" alt="ISP">
-        <div>
-          <div class="text-sm font-bold leading-tight">Panel de Libretas</div>
-          <div class="text-[11px] text-white/60 leading-tight">ISP · Infraestructura y Servicios Portuarios</div>
+        <img src="../img/logoisp-bola-96.png" class="w-9 h-9 shrink-0 object-contain" alt="ISP">
+        <div class="min-w-0">
+          <div class="text-sm font-bold leading-tight whitespace-nowrap">Panel de Libretas</div>
+          <div class="hidden sm:block text-[11px] text-white/60 leading-tight">ISP · Infraestructura y Servicios Portuarios</div>
         </div>
       </div>
-      <div class="flex items-center gap-2">
-        <button id="llenarLibretaBtn" class="flex items-center gap-2 text-xs font-bold bg-[#00b4a8] hover:bg-[#00a8a0] rounded-full px-4 py-2 transition">
+      <div class="flex items-center gap-2 shrink-0">
+        <button id="llenarLibretaBtn" class="flex items-center gap-1.5 whitespace-nowrap text-xs font-bold bg-[#00b4a8] hover:bg-[#00a8a0] rounded-full px-3 sm:px-4 py-2 transition">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/></svg>
-          Llenar libreta
+          <span>Llenar<span class="hidden sm:inline"> libreta</span></span>
         </button>
-        <button id="logoutBtn" class="flex items-center gap-2 text-xs font-semibold bg-white/10 hover:bg-white/20 border border-white/25 rounded-full px-4 py-2 transition">
-          Cerrar sesión
+        <button id="logoutBtn" class="flex items-center gap-2 whitespace-nowrap text-xs font-semibold bg-white/10 hover:bg-white/20 border border-white/25 rounded-full px-3 sm:px-4 py-2 transition">
+          <span class="sm:hidden">Salir</span><span class="hidden sm:inline">Cerrar sesión</span>
         </button>
       </div>
     </div>

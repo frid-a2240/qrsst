@@ -106,7 +106,7 @@ form.addEventListener('submit', async (e) => {
   submitBtn.textContent = 'Enviando...';
 
   try {
-    const res = await fetch('/api/submit-nmha', {
+    const res = await fetch('api/submit-nmha', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)

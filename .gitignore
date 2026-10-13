@@ -5,3 +5,11 @@ node_modules
 roster.json
 LISTADO*.xlsx
 empleados_activos*.xlsx
+
+# Específico de cada servidor
+web.config
+logs/
+*.sql
+*.backup
+!db/schema.sql
+Guia_*.docx

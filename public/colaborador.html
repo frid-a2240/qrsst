@@ -4,6 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <title>Libreta de Herramientas ISP</title>
+<link rel="icon" type="image/png" sizes="32x32" href="img/icono-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="img/icono-192.png">
+<link rel="apple-touch-icon" href="img/icono-180.png">
 <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
@@ -82,7 +85,7 @@
         window.location.href = 'admin/dashboard.html';
         return;
       }
-      await fetch('/api/colaborador-logout', { method: 'POST' });
+      await fetch('api/colaborador-logout', { method: 'POST' });
       window.location.href = 'index.html';
     });
   </script>

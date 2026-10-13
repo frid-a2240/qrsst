@@ -18,7 +18,7 @@ window.modoAdmin = leerModoAdmin();
 
 window.colaboradorListo = (async function requireColaborador() {
   if (window.modoAdmin) {
-    const res = await fetch('/api/admin-me');
+    const res = await fetch('api/admin-me');
     if (!res.ok) {
       try { sessionStorage.removeItem(MODO_ADMIN_KEY); } catch {}
       window.location.href = 'admin/login.html';
@@ -29,7 +29,7 @@ window.colaboradorListo = (async function requireColaborador() {
     return window.colaboradorActual;
   }
 
-  const res = await fetch('/api/colaborador-me');
+  const res = await fetch('api/colaborador-me');
   if (!res.ok) {
     window.location.href = 'colaborador-login.html';
     return null;
@@ -53,6 +53,8 @@ window.hacerNombreEditable = function hacerNombreEditable(display, hidden, valor
   display.replaceWith(input);
   return input;
 };
+
+
 
 (function fechaDeHoy() {
   const d = new Date();

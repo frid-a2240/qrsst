@@ -1,5 +1,6 @@
 import { query } from '../lib/db.js';
 import { autorDelEnvio } from '../lib/autor.js';
+import { esFecha, texto } from '../lib/validar.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -14,12 +15,15 @@ export default async function handler(req, res) {
     return;
   }
   b.nombre_colaborador = colaborador.nombre;
-  const required = ['nombre_colaborador', 'sitio_trabajo', 'fecha', 'tarea'];
-  for (const field of required) {
-    if (!b[field] || typeof b[field] !== 'string') {
-      res.status(400).json({ error: `Falta el campo ${field}` });
-      return;
-    }
+  b.sitio_trabajo = texto(b.sitio_trabajo, 300);
+  b.tarea = texto(b.tarea, 500);
+  if (!b.sitio_trabajo || !b.tarea) {
+    res.status(400).json({ error: 'Completa sitio de trabajo y tarea.' });
+    return;
+  }
+  if (!esFecha(b.fecha)) {
+    res.status(400).json({ error: 'La fecha no es válida.' });
+    return;
   }
   const booleans = [
     'paso1_observo', 'paso2a_capacitado', 'paso2b_autorizacion',
@@ -34,6 +38,7 @@ export default async function handler(req, res) {
 
   const tabla = Array.isArray(b.tabla)
     ? b.tabla
+        .slice(0, 20)
         .filter((row) => row && typeof row === 'object')
         .map((row) => ({
           peligro: typeof row.peligro === 'string' ? row.peligro.slice(0, 500) : '',

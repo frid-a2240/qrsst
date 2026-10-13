@@ -1,5 +1,6 @@
 import { query } from '../lib/db.js';
 import { requireAdmin } from '../lib/auth.js';
+import { esFecha } from '../lib/validar.js';
 
 const TABLES = {
   art: 'art_submissions',
@@ -29,11 +30,11 @@ export default async function handler(req, res) {
   const conditions = [];
   const params = [];
 
-  if (req.query.desde) {
+  if (esFecha(req.query.desde)) {
     params.push(req.query.desde);
     conditions.push(`fecha >= $${params.length}`);
   }
-  if (req.query.hasta) {
+  if (esFecha(req.query.hasta)) {
     params.push(req.query.hasta);
     conditions.push(`fecha <= $${params.length}`);
   }

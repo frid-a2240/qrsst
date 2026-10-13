@@ -1,5 +1,8 @@
 import { query } from '../lib/db.js';
 import { autorDelEnvio } from '../lib/autor.js';
+import { esFecha, texto } from '../lib/validar.js';
+
+const TIPOS = ['acto_inseguro', 'condicion_insegura', 'casi_incidente', 'mejora'];
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -13,18 +16,27 @@ export default async function handler(req, res) {
     res.status(status).json({ error });
     return;
   }
-  b.reportado_por = colaborador.nombre;
-  const required = ['fecha', 'reportado_por', 'centro_trabajo', 'area_especifica', 'descripcion'];
-  for (const field of required) {
-    if (!b[field] || typeof b[field] !== 'string') {
-      res.status(400).json({ error: `Falta el campo ${field}` });
-      return;
-    }
-  }
-  if (typeof b.requiere_acciones_adicionales !== 'boolean') {
-    res.status(400).json({ error: 'Falta requiere_acciones_adicionales' });
+
+  const centro = texto(b.centro_trabajo, 300);
+  const area = texto(b.area_especifica, 300);
+  const descripcion = texto(b.descripcion, 5000);
+  if (!centro || !area || !descripcion) {
+    res.status(400).json({ error: 'Completa centro de trabajo, área específica y la descripción.' });
     return;
   }
+  if (!esFecha(b.fecha)) {
+    res.status(400).json({ error: 'La fecha no es válida.' });
+    return;
+  }
+  if (typeof b.requiere_acciones_adicionales !== 'boolean') {
+    res.status(400).json({ error: 'Responde SI o NO en "¿Se requieren acciones adicionales?".' });
+    return;
+  }
+
+  const tipos = [...new Set(Array.isArray(b.tipo) ? b.tipo : [])].filter((t) => TIPOS.includes(t));
+  const esenciales = [...new Set(Array.isArray(b.esenciales_fallidos) ? b.esenciales_fallidos : [])]
+    .filter((n) => Number.isInteger(n) && n >= 1 && n <= 12)
+    .sort((x, y) => x - y);
 
   try {
     await query(
@@ -34,13 +46,10 @@ export default async function handler(req, res) {
          numero_control, puesto)
        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)`,
       [
-        b.fecha,
-        Array.isArray(b.tipo) ? b.tipo : [],
-        b.reportado_por, b.centro_trabajo, b.area_especifica, b.descripcion,
-        Array.isArray(b.esenciales_fallidos) ? b.esenciales_fallidos : [],
-        b.acciones_inmediatas || null,
+        b.fecha, tipos, colaborador.nombre, centro, area, descripcion, esenciales,
+        texto(b.acciones_inmediatas, 5000) || null,
         b.requiere_acciones_adicionales,
-        b.acciones_sugeridas || null,
+        texto(b.acciones_sugeridas, 5000) || null,
         colaborador.numero_control, colaborador.puesto
       ]
     );

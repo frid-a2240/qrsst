@@ -36,7 +36,8 @@ function badge(texto, tipo) {
 }
 
 async function checkAuth() {
-  const res = await fetch('/api/admin-me');
+  const res = await fetch('../api/admin-me');
+  await res.json().catch(() => null);
   if (!res.ok) {
     window.location.href = 'login.html';
     return false;
@@ -54,7 +55,7 @@ async function cargar() {
   if (filtroDesde.value) params.set('desde', filtroDesde.value);
   if (filtroHasta.value) params.set('hasta', filtroHasta.value);
 
-  const res = await fetch(`/api/admin-submissions?${params}`);
+  const res = await fetch(`../api/admin-submissions?${params}`);
   if (res.status === 401) {
     window.location.href = 'login.html';
     return;
@@ -185,7 +186,7 @@ function separarAcciones(texto) {
 
 async function cargarAcciones(row) {
   const panel = document.getElementById('accionesPanel');
-  const res = await fetch(`/api/admin-nmha-acciones?nmha_id=${row.id}`);
+  const res = await fetch(`../api/admin-nmha-acciones?nmha_id=${row.id}`);
   if (res.status === 401) {
     window.location.href = 'login.html';
     return;
@@ -289,7 +290,7 @@ async function revisarAccion(row, responsables, btn) {
   }
   caja.querySelectorAll('button').forEach((b) => { b.disabled = true; });
   try {
-    const res = await fetch('/api/admin-nmha-acciones', {
+    const res = await fetch('../api/admin-nmha-acciones', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ nmha_id: row.id, revisar: Number(caja.dataset.id), decision, comentario })
@@ -363,7 +364,7 @@ async function enviarAcciones(row, reenviar = false) {
   btn.disabled = true;
   btn.textContent = 'Enviando...';
   try {
-    const res = await fetch('/api/admin-nmha-acciones', {
+    const res = await fetch('../api/admin-nmha-acciones', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(reenviar ? { nmha_id: row.id, reenviar: true } : { nmha_id: row.id, acciones })
@@ -373,7 +374,7 @@ async function enviarAcciones(row, reenviar = false) {
 
     actualizarConteos(row, data.acciones);
     renderList();
-    const resp =await fetch(`/api/admin-nmha-acciones?nmha_id=${row.id}`).then((r) => r.json());
+    const resp =await fetch(`../api/admin-nmha-acciones?nmha_id=${row.id}`).then((r) => r.json());
     renderAccionesPanel(row, data.acciones, resp.responsables || []);
 
     const fallos = data.envios.filter((e) => !e.ok);
@@ -424,7 +425,7 @@ document.getElementById('exportBtn').addEventListener('click', () => {
   const params = new URLSearchParams();
   if (filtroDesde.value) params.set('desde', filtroDesde.value);
   if (filtroHasta.value) params.set('hasta', filtroHasta.value);
-  window.location.href = `/api/admin-export?${params}`;
+  window.location.href = `../api/admin-export?${params}`;
 });
 
 document.getElementById('llenarLibretaBtn').addEventListener('click', () => {
@@ -434,7 +435,7 @@ document.getElementById('llenarLibretaBtn').addEventListener('click', () => {
 
 document.getElementById('logoutBtn').addEventListener('click', async () => {
   try { sessionStorage.removeItem('isp_modo_admin'); } catch {}
-  await fetch('/api/admin-logout', { method: 'POST' });
+  await fetch('../api/admin-logout', { method: 'POST' });
   window.location.href = '../index.html';
 });
 
