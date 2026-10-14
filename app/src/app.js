@@ -333,11 +333,74 @@
 
   function mostrarVersionNueva(info) {
     if (!info || document.querySelector('.app-version')) return;
+    const url = `${SERVIDOR}/descargas/${encodeURIComponent(info.archivo || 'LibretaISP.apk')}`;
     const banner = crear(`<div class="app-version">
-      <span>Hay una versión nueva de la app (${escapar(info.version)}).</span>
-      <a class="app-pend-btn" href="${SERVIDOR}/descargas/${encodeURIComponent(info.archivo || 'LibretaISP.apk')}">Descargar</a>
+      <span class="app-version-txt">Hay una versión nueva de la app (${escapar(info.version)}).</span>
+      <a class="app-pend-btn" href="${url}">Actualizar</a>
     </div>`);
+    const actualizador = cap.Plugins && cap.Plugins.Actualizador;
+    // Las APK 1.0.6+ traen el actualizador; se descarga e instala sin salir al navegador.
+    if (actualizador) {
+      banner.querySelector('a').addEventListener('click', (e) => {
+        e.preventDefault();
+        actualizarDentro(actualizador, url, banner);
+      });
+      // Al dar el permiso de instalar, Android reinicia la app: aquí se retoma.
+      const pendiente = leer('instalar_pendiente');
+      if (pendiente && Date.now() - pendiente < 10 * 60 * 1000) {
+        borrar('instalar_pendiente');
+        abrirInstalador(actualizador, banner.querySelector('.app-version-txt')).catch(() => {});
+      }
+    }
     document.body.prepend(banner);
+  }
+
+  let actualizando = false;
+  async function actualizarDentro(actualizador, url, banner) {
+    if (actualizando) return;
+    actualizando = true;
+    const txt = banner.querySelector('.app-version-txt');
+    const btn = banner.querySelector('a');
+    const textoOriginal = txt.textContent;
+    btn.hidden = true;
+    txt.textContent = 'Descargando actualización… 0%';
+    const escucha = await actualizador.addListener('progreso', (p) => {
+      txt.textContent = `Descargando actualización… ${p.porcentaje}%`;
+    });
+    try {
+      await actualizador.descargar({ url });
+      await abrirInstalador(actualizador, txt);
+    } catch {
+      txt.textContent = textoOriginal;
+      aviso('No se pudo descargar la actualización. Revisa que estés en el wifi de la empresa.');
+    } finally {
+      escucha.remove();
+      btn.hidden = false;
+      actualizando = false;
+    }
+  }
+
+  async function abrirInstalador(actualizador, txt) {
+    const r = await actualizador.instalar();
+    if (r.permiso) {
+      txt.textContent = 'Toca «Actualizar» en el mensaje de Android.';
+      return;
+    }
+    // Primera vez: Android pide permitir que esta app instale actualizaciones.
+    txt.textContent = 'Activa «Permitir de esta fuente» y regresa a la app.';
+    guardar('instalar_pendiente', Date.now());
+    const alVolver = async () => {
+      if (document.visibilityState !== 'visible') return;
+      document.removeEventListener('visibilitychange', alVolver);
+      borrar('instalar_pendiente');
+      try {
+        const otra = await actualizador.instalar();
+        txt.textContent = otra.permiso
+          ? 'Toca «Actualizar» en el mensaje de Android.'
+          : 'Sin el permiso no se puede actualizar. Toca «Actualizar» para intentar de nuevo.';
+      } catch {}
+    };
+    document.addEventListener('visibilitychange', alVolver);
   }
 
   // Una vez por arranque de la app; el aviso se repite en cada página mientras siga abierta.
