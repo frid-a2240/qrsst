@@ -71,7 +71,12 @@ export default async function handler(req, res) {
            ${desdeTablas} ${baseWhere}`,
         params
       ),
-      query(`SELECT DISTINCT r.id, r.nombre FROM nmha_acciones a JOIN responsables r ON r.id = a.responsable_id ORDER BY r.nombre`)
+      // Todos los activos (aunque aún no tengan acciones) y los inactivos que sí tienen.
+      query(
+        `SELECT r.id, r.nombre FROM responsables r
+          WHERE r.activo OR EXISTS (SELECT 1 FROM nmha_acciones a WHERE a.responsable_id = r.id)
+          ORDER BY r.nombre`
+      )
     ]);
     res.status(200).json({
       rows: lista.rows,

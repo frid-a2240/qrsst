@@ -1,5 +1,5 @@
 // Carga como responsables (a quienes se asignan acciones del NMHA y tienen "Mis acciones")
-// a los empleados activos cuyo puesto está en PUESTOS o empieza con "TECNICO"/"TÉCNICO".
+// a los empleados activos cuyo puesto está en PUESTOS o empieza con "TECNICO"/"TÉCNICO", más los de EXTRA.
 // Lee de la tabla colaboradores, así que corre igual en la laptop que en el servidor.
 // Quien ya no tenga uno de esos puestos queda inactivo. No toca el email ni las filas es_prueba.
 // Uso: node --env-file=.env scripts/seed-responsables.js
@@ -19,21 +19,27 @@ const PUESTOS = [
   'SUPERVISOR DE SEGURIDAD E'
 ];
 
+// Responsables por número de control aunque su puesto no esté arriba (se activan también como colaboradores).
+const EXTRA = [
+  '300127' // GUIRADO AGRUEL, FRANCISCO · COORDINADOR DE MANTENIMIENTO
+];
+
 function normalizar(puesto) {
   return String(puesto || '').normalize('NFD').replace(/[̀-ͯ]/g, '').trim().toUpperCase();
 }
 
-function esResponsable(puesto) {
-  const p = normalizar(puesto);
-  return PUESTOS.includes(p) || p.startsWith('TECNICO');
+function esResponsable(row) {
+  const p = normalizar(row.puesto);
+  return EXTRA.includes(row.numero_control) || PUESTOS.includes(p) || p.startsWith('TECNICO');
 }
 
 const pool = getPool();
+await pool.query('UPDATE colaboradores SET activo = true WHERE numero_control = ANY($1::text[])', [EXTRA]);
 const { rows } = await pool.query('SELECT numero_control, nombre, puesto FROM colaboradores WHERE activo');
 const vistos = [];
 
 for (const row of rows) {
-  if (!esResponsable(row.puesto)) continue;
+  if (!esResponsable(row)) continue;
   vistos.push(row.numero_control);
   await pool.query(
     `INSERT INTO responsables (numero_control, nombre)
