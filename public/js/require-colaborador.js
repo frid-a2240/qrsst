@@ -29,6 +29,16 @@ window.colaboradorListo = (async function requireColaborador() {
     return window.colaboradorActual;
   }
 
+  // En la app, con sesión guardada se entra al instante (con o sin red) y el
+  // servidor se consulta en segundo plano para refrescar datos o detectar
+  // una sesión vencida.
+  const guardadaApp = window.APP && window.APP.sesionGuardada();
+  if (guardadaApp) {
+    window.colaboradorActual = Object.assign({}, guardadaApp);
+    refrescarSesionApp();
+    return window.colaboradorActual;
+  }
+
   let res;
   try {
     res = await fetch('api/colaborador-me');
@@ -53,6 +63,27 @@ window.colaboradorListo = (async function requireColaborador() {
   window.colaboradorActual = data;
   return data;
 })();
+
+async function refrescarSesionApp() {
+  let res;
+  try {
+    res = await fetch('api/colaborador-me');
+  } catch {
+    window.colaboradorActual.sin_conexion = true;
+    return;
+  }
+  if (res.status === 401) {
+    window.APP.olvidarSesion();
+    window.location.href = 'colaborador-login.html';
+    return;
+  }
+  if (!res.ok) return;
+  const data = await res.json().catch(() => null);
+  if (!data) return;
+  window.APP.guardarSesion(data);
+  Object.assign(window.colaboradorActual, data, { sin_conexion: false });
+  document.dispatchEvent(new CustomEvent('colaborador-actualizado', { detail: window.colaboradorActual }));
+}
 
 // Cambia el nombre de solo lectura por un campo editable que alimenta el input oculto.
 window.hacerNombreEditable = function hacerNombreEditable(display, hidden, valorInicial, extraClass) {

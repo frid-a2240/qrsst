@@ -72,6 +72,27 @@
     ]);
   }
 
+  // Con datos móviles u otro wifi, las peticiones al servidor no fallan: se quedan
+  // colgadas hasta el tiempo límite. Una prueba corta (cualquier respuesta sirve)
+  // decide rápido si hay servidor; el resultado se recuerda unos segundos.
+  let alcanceHasta = 0;
+  let alcanceOk = false;
+  let pruebaEnCurso = null;
+  function servidorAlcanzable() {
+    if (Date.now() < alcanceHasta) return Promise.resolve(alcanceOk);
+    if (!pruebaEnCurso) {
+      pruebaEnCurso = conTiempo(`${SERVIDOR}/descargas/version.json?t=${Date.now()}`, {}, 4000)
+        .then(() => true, () => false)
+        .then((ok) => {
+          alcanceOk = ok;
+          alcanceHasta = Date.now() + (ok ? 20000 : 8000);
+          pruebaEnCurso = null;
+          return ok;
+        });
+    }
+    return pruebaEnCurso;
+  }
+
   function respuestaJson(cuerpo, status) {
     return new Response(JSON.stringify(cuerpo), { status, headers: { 'Content-Type': 'application/json' } });
   }
@@ -86,6 +107,7 @@
     datos.llenado_en = new Date().toISOString();
     const body = JSON.stringify(datos);
     try {
+      if (!(await servidorAlcanzable())) throw new Error('sin servidor');
       return await conTiempo(SERVIDOR + ruta, { method: 'POST', headers, body }, 90000);
     } catch {
       // Sin conexión (o se cortó a medio envío: el envio_id evita que se duplique).
@@ -119,7 +141,10 @@
       return enviarOGuardar(u.pathname, opciones.body, headers);
     }
     const espera = metodo === 'GET' ? 20000 : 60000;
-    return conTiempo(SERVIDOR + u.pathname + u.search, Object.assign({}, opciones, { headers }), espera);
+    return servidorAlcanzable().then((ok) => {
+      if (!ok) throw new TypeError('Sin conexión con el servidor');
+      return conTiempo(SERVIDOR + u.pathname + u.search, Object.assign({}, opciones, { headers }), espera);
+    });
   };
 
   // ---------- sesión guardada (para llenar sin conexión) ----------
@@ -161,6 +186,7 @@
   async function procesarCola(manual) {
     if (procesando) return;
     procesando = true;
+    if (manual) alcanceHasta = 0;
     let enviados = 0;
     let sinConexion = false;
     try {
@@ -168,6 +194,7 @@
       if (!items.length) return;
       let sesion;
       try {
+        if (!(await servidorAlcanzable())) throw new Error('sin servidor');
         const r = await conTiempo(`${SERVIDOR}/api/colaborador-me`, { headers: ENCABEZADO_APP }, 15000);
         if (r.status === 401) {
           sinSesion = true;
@@ -445,7 +472,7 @@
     revisarVersion();
   });
 
-  window.addEventListener('online', () => procesarCola(false));
+  window.addEventListener('online', () => { alcanceHasta = 0; procesarCola(false); });
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') procesarCola(false);
   });

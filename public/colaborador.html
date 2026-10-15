@@ -60,7 +60,10 @@
 
   <script src="js/require-colaborador.js"></script>
   <script>
-    window.colaboradorListo.then((c) => {
+    // En la app se pinta con la sesión guardada y se repinta cuando contesta el servidor.
+    window.colaboradorListo.then(pintarMisAcciones);
+    document.addEventListener('colaborador-actualizado', (e) => pintarMisAcciones(e.detail));
+    function pintarMisAcciones(c) {
       if (!c || !c.es_responsable) return;
       const n = c.acciones_pendientes;
       document.getElementById('misAccionesTexto').textContent = n
@@ -70,7 +73,7 @@
       count.textContent = n;
       count.classList.toggle('cero', !n);
       document.getElementById('misAccionesBtn').style.display = 'flex';
-    });
+    }
   </script>
   <script>
     const logoutBtn = document.getElementById('logoutBtn');
